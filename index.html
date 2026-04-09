@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>TerpelPOS — Actualizaciones</title>
+<style>
+  :root {
+    --red:#E63B2E; --red-dark:#B02820;
+    --bg:#F7F7F6; --surface:#FFFFFF; --surface2:#F1F0ED;
+    --border:rgba(0,0,0,0.10); --border2:rgba(0,0,0,0.18);
+    --green-bg:#EAF3DE; --green-text:#27500A;
+    --amber-bg:#FAEEDA; --amber-text:#633806;
+    --blue-bg:#E6F1FB; --blue-text:#0C447C;
+    --danger-bg:#FCEBEB; --danger-text:#791F1F;
+    --radius:8px; --radius-lg:12px;
+    --font:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    --mono:'SF Mono','Fira Code',monospace;
+  }
+  @media(prefers-color-scheme:dark){
+    :root{
+      --bg:#1A1A18; --surface:#242422; --surface2:#2C2C2A;
+      --border:rgba(255,255,255,0.09); --border2:rgba(255,255,255,0.18);
+      --text:#F0EFEB; --text2:#A8A8A4; --text3:#666662;
+      --green-bg:#173404; --green-text:#C0DD97;
+      --amber-bg:#412402; --amber-text:#FAC775;
+      --blue-bg:#042C53; --blue-text:#B5D4F4;
+      --danger-bg:#501313; --danger-text:#F7C1C1;
+    }
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;}
+  .app{max-width:920px;margin:0 auto;padding:24px 16px 60px;}
+  .header{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;flex-wrap:wrap;gap:12px;}
+  .brand{display:flex;align-items:center;gap:12px;}
+  .brand-icon{width:40px;height:40px;border-radius:10px;background:var(--red);display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:600;flex-shrink:0;}
+  .brand-name{font-size:17px;font-weight:600;}
+  .brand-sub{font-size:12px;color:var(--text2);margin-top:1px;}
+  .stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:24px;}
+  .stat{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;}
+  .stat-label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;}
+  .stat-val{font-size:24px;font-weight:600;}
+  .stat-val.green{color:#3B6D11;} .stat-val.amber{color:#854F0B;} .stat-val.red{color:var(--red);}
+  @media(prefers-color-scheme:dark){.stat-val.green{color:#97C459;}.stat-val.amber{color:#EF9F27;}}
+  .toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:16px;}
+  .search{flex:1;min-width:160px;max-width:280px;padding:8px 12px;font-size:13px;border:0.5px solid var(--border2);border-radius:var(--radius);background:var(--surface);color:var(--text);font-family:var(--font);outline:none;}
+  .search:focus{border-color:var(--red);}
+  .pill{font-size:12px;padding:5px 14px;border:0.5px solid var(--border2);border-radius:20px;background:transparent;color:var(--text2);cursor:pointer;font-family:var(--font);}
+  .pill:hover{background:var(--surface2);}
+  .pill.active{background:var(--surface);color:var(--text);font-weight:600;}
+  .btn{padding:8px 16px;font-size:13px;border:0.5px solid var(--border2);border-radius:var(--radius);background:transparent;color:var(--text);cursor:pointer;font-family:var(--font);font-weight:500;}
+  .btn:hover{background:var(--surface2);}
+  .btn-red{background:var(--red);color:#fff;border-color:transparent;}
+  .btn-red:hover{background:var(--red-dark);}
+  .btn-sm{padding:4px 10px;font-size:12px;}
+  .cards{display:flex;flex-direction:column;gap:8px;}
+  .card{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;}
+  .card-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;gap:12px;cursor:pointer;user-select:none;}
+  .card-head:hover{background:var(--surface2);}
+  .card-left{display:flex;align-items:center;gap:10px;flex:1;min-width:0;}
+  .ver-badge{font-size:12px;font-weight:600;padding:3px 10px;border-radius:6px;background:var(--red);color:#fff;white-space:nowrap;flex-shrink:0;}
+  .ver-arrow{font-size:12px;color:var(--text3);flex-shrink:0;}
+  .card-title{font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .card-sub{font-size:12px;color:var(--text2);margin-top:2px;}
+  .card-right{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+  .tag{font-size:11px;font-weight:500;padding:3px 9px;border-radius:6px;white-space:nowrap;}
+  .tag-completado{background:var(--green-bg);color:var(--green-text);}
+  .tag-en-progreso{background:var(--amber-bg);color:var(--amber-text);}
+  .tag-pendiente{background:var(--danger-bg);color:var(--danger-text);}
+  .tag-validado{background:var(--blue-bg);color:var(--blue-text);}
+  .card-body{border-top:0.5px solid var(--border);padding:16px;display:none;}
+  .card-body.open{display:block;}
+  .sec-label{font-size:10px;font-weight:600;color:var(--red);text-transform:uppercase;letter-spacing:.07em;margin:16px 0 8px;}
+  .sec-label:first-child{margin-top:0;}
+  .info-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}
+  .info-box{background:var(--surface2);border-radius:var(--radius);padding:10px 12px;}
+  .info-box .lbl{font-size:11px;color:var(--text3);margin-bottom:3px;}
+  .info-box .val{font-size:12px;color:var(--text);word-break:break-word;line-height:1.5;}
+  .info-box .val.mono{font-family:var(--mono);font-size:11px;}
+  .pre-box{background:var(--surface2);border-radius:var(--radius);padding:10px 12px;font-size:12px;color:var(--text2);line-height:1.6;white-space:pre-wrap;word-break:break-word;}
+  .svc-chips{display:flex;flex-wrap:wrap;gap:5px;}
+  .svc-chip{font-size:11px;padding:3px 9px;border-radius:20px;background:var(--blue-bg);color:var(--blue-text);font-weight:500;}
+  .core-chip{background:var(--amber-bg);color:var(--amber-text);}
+  .pm2-chip{background:var(--green-bg);color:var(--green-text);}
+  .val-checks{display:flex;flex-wrap:wrap;gap:6px;}
+  .val-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text2);padding:5px 10px;border-radius:var(--radius);border:0.5px solid var(--border);background:var(--surface2);cursor:pointer;user-select:none;}
+  .val-item.done{border-color:#3B6D11;background:var(--green-bg);color:var(--green-text);}
+  .check-circle{width:12px;height:12px;border-radius:50%;border:1.5px solid currentColor;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .val-item.done .check-circle::after{content:'';width:6px;height:6px;border-radius:50%;background:currentColor;display:block;}
+  .card-footer{display:flex;justify-content:flex-end;gap:6px;margin-top:16px;padding-top:12px;border-top:0.5px solid var(--border);}
+  /* Modal */
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:100;overflow-y:auto;padding:24px 16px;}
+  .modal-overlay.open{display:flex;align-items:flex-start;justify-content:center;}
+  .modal{background:var(--surface);border-radius:var(--radius-lg);border:0.5px solid var(--border2);padding:24px;width:100%;max-width:720px;margin:auto;}
+  .modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+  .modal-title{font-size:16px;font-weight:600;}
+  .modal-close{width:28px;height:28px;border-radius:6px;border:0.5px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;font-family:var(--font);}
+  .modal-close:hover{background:var(--surface2);}
+  .form-sep{font-size:11px;font-weight:600;color:var(--red);text-transform:uppercase;letter-spacing:.07em;padding-bottom:6px;border-bottom:1px solid rgba(230,59,46,0.2);margin:16px 0 10px;}
+  .frow{display:grid;gap:10px;margin-bottom:10px;}
+  .frow.col2{grid-template-columns:1fr 1fr;}
+  .frow.col3{grid-template-columns:1fr 1fr 1fr;}
+  .fg{display:flex;flex-direction:column;gap:4px;}
+  .fg label{font-size:11px;color:var(--text2);font-weight:500;text-transform:uppercase;letter-spacing:.04em;}
+  .fg input,.fg select,.fg textarea{padding:8px 10px;font-size:13px;border:0.5px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text);font-family:var(--font);outline:none;}
+  .fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--red);}
+  .fg textarea{resize:vertical;min-height:60px;}
+  /* Core type pills */
+  .core-types{display:flex;flex-wrap:wrap;gap:6px;padding:6px 0;}
+  .core-btn{font-size:12px;padding:5px 13px;border-radius:20px;border:0.5px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;font-family:var(--font);transition:all .12s;}
+  .core-btn:hover{background:var(--surface2);}
+  .core-btn.active{background:var(--amber-bg);color:var(--amber-text);border-color:transparent;font-weight:600;}
+  /* Service checkboxes */
+  .svc-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+  .svc-header label{font-size:11px;color:var(--text2);font-weight:500;text-transform:uppercase;letter-spacing:.04em;}
+  .svc-actions{display:flex;gap:8px;}
+  .svc-act-btn{font-size:11px;color:var(--text3);cursor:pointer;background:none;border:none;font-family:var(--font);padding:0;text-decoration:underline;}
+  .svc-act-btn:hover{color:var(--red);}
+  .svc-search{width:100%;padding:6px 10px;font-size:12px;border:0.5px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text);font-family:var(--font);outline:none;margin-bottom:8px;}
+  .svc-search:focus{border-color:var(--red);}
+  .svc-container{max-height:300px;overflow-y:auto;border:0.5px solid var(--border);border-radius:var(--radius);padding:4px;}
+  .svc-group-header{display:flex;align-items:center;justify-content:space-between;padding:6px 8px 4px;margin-top:4px;}
+  .svc-group-header:first-child{margin-top:0;}
+  .svc-group-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--red);}
+  .svc-group-count{font-size:10px;color:var(--text3);}
+  .svc-group-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:2px;margin-bottom:6px;}
+  .svc-cb{display:flex;align-items:center;gap:7px;padding:5px 8px;border-radius:6px;cursor:pointer;border:0.5px solid transparent;user-select:none;}
+  .svc-cb:hover{background:var(--surface2);}
+  .svc-cb.checked{background:var(--blue-bg);border-color:rgba(23,95,165,0.2);}
+  .svc-cb.pm2.checked{background:var(--green-bg);border-color:rgba(59,109,17,0.2);}
+  .svc-cb input[type=checkbox]{width:14px;height:14px;accent-color:var(--red);cursor:pointer;flex-shrink:0;}
+  .svc-cb span{font-size:12px;color:var(--text);line-height:1.3;}
+  .svc-cb.checked span{color:var(--blue-text);font-weight:500;}
+  .svc-cb.pm2.checked span{color:var(--green-text);}
+  .svc-group-divider{height:0.5px;background:var(--border);margin:4px 4px 8px;}
+  .modal-footer{display:flex;justify-content:flex-end;gap:8px;margin-top:20px;}
+  .empty{text-align:center;padding:40px 20px;color:var(--text3);font-size:14px;}
+  @media(max-width:600px){
+    .stats{grid-template-columns:repeat(2,1fr);}
+    .info-grid,.frow.col2,.frow.col3{grid-template-columns:1fr;}
+    .svc-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div class="brand">
+      <div class="brand-icon">POS</div>
+      <div>
+        <div class="brand-name">TerpelPOS — Actualizaciones</div>
+        <div class="brand-sub">Registro de versiones y cambios</div>
+      </div>
+    </div>
+    <button class="btn btn-red" onclick="openModal()">+ Nueva actualización</button>
+  </div>
+  <div class="stats" id="stats"></div>
+  <div class="toolbar">
+    <input class="search" id="search" placeholder="Buscar versión, responsable, servicio..." oninput="render()"/>
+    <button class="pill active" data-f="all" onclick="setFilter('all',this)">Todas</button>
+    <button class="pill" data-f="pendiente" onclick="setFilter('pendiente',this)">Pendiente</button>
+    <button class="pill" data-f="en-progreso" onclick="setFilter('en-progreso',this)">En progreso</button>
+    <button class="pill" data-f="completado" onclick="setFilter('completado',this)">Completado</button>
+    <button class="pill" data-f="validado" onclick="setFilter('validado',this)">Validado</button>
+  </div>
+  <div class="cards" id="cards"></div>
+</div>
+
+<div class="modal-overlay" id="modal-overlay" onclick="overlayClick(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title">Nueva actualización</div>
+      <button class="modal-close" onclick="closeModal()">&#x2715;</button>
+    </div>
+
+    <div class="form-sep">Información general</div>
+    <div class="frow col3">
+      <div class="fg"><label>Versión anterior</label><input id="f-prev" placeholder="20.0.5"/></div>
+      <div class="fg"><label>Versión nueva</label><input id="f-new" placeholder="21.3.1"/></div>
+      <div class="fg"><label>Fecha</label><input id="f-date" type="date"/></div>
+    </div>
+    <div class="frow col2">
+      <div class="fg"><label>Responsable</label><input id="f-resp" placeholder="Nombre completo"/></div>
+      <div class="fg"><label>Estado</label>
+        <select id="f-estado">
+          <option value="pendiente">Pendiente</option>
+          <option value="en-progreso">En progreso</option>
+          <option value="completado" selected>Completado</option>
+          <option value="validado">Validado</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-sep">Servicios compilados</div>
+    <div class="fg">
+      <label>Tipo de Core <span style="font-weight:400;text-transform:none;font-size:11px;color:var(--text3)">— selecciona los que aplican</span></label>
+      <div class="core-types" id="core-types-container"></div>
+    </div>
+
+    <div style="margin-top:12px;">
+      <div class="svc-header">
+        <label>Servicios actualizados en este compilado</label>
+        <div class="svc-actions">
+          <button class="svc-act-btn" onclick="toggleAllSvcs(true)">Seleccionar todo</button>
+          <button class="svc-act-btn" onclick="toggleAllSvcs(false)">Limpiar</button>
+        </div>
+      </div>
+      <input class="svc-search" id="svc-search" placeholder="Filtrar servicios..." oninput="filterSvcGrid()"/>
+      <div class="svc-container" id="svc-grid"></div>
+    </div>
+
+    <div class="form-sep">Base de datos</div>
+    <div class="frow">
+      <div class="fg"><label>Cambios Core (SQL / procedimientos)</label><textarea id="f-core" rows="3" placeholder="UPDATE public.wacher_parametros SET..."></textarea></div>
+    </div>
+    <div class="frow">
+      <div class="fg"><label>Cambios Registry (SQL / funciones)</label><textarea id="f-registry" rows="2" placeholder="fnc_procesar_insertar_productos_registry"></textarea></div>
+    </div>
+
+    <div class="form-sep">Scripts de actualización</div>
+    <div class="frow col2">
+      <div class="fg"><label>Scripts agregados</label><input id="f-scripts-add" placeholder="upgrade-core.sql, upgrade-registry.sql"/></div>
+      <div class="fg"><label>Scripts actualizados</label><input id="f-scripts-upd" placeholder="schema_lazoexpresscore.sql..."/></div>
+    </div>
+    <div class="frow col2">
+      <div class="fg"><label>Script aplicado</label><input id="f-script-ap" placeholder="update20.0.5.sql"/></div>
+      <div class="fg"><label>Bat ejecutado</label><input id="f-bat" placeholder="Actualizacion20.0.5.bat"/></div>
+    </div>
+    <div class="frow">
+      <div class="fg"><label>Archivos / carpetas adicionales</label><input id="f-adicionales" placeholder="MENU_RAPIDO1.3.3.bat, carpeta XYZ..."/></div>
+    </div>
+
+    <div class="form-sep">Notas y observaciones</div>
+    <div class="frow">
+      <div class="fg"><label>Notas especiales</label><textarea id="f-notas" rows="4" placeholder="Actualiza binarios POS, aplica cambios en bases de datos..."></textarea></div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-red" onclick="saveRecord()">Guardar actualización</button>
+    </div>
+  </div>
+</div>
+
+<script>
+var CORE_TYPES = ['core-Gilbarco','core-Wayne','core-Tokheim','core-Mepsan','Core-HongYang','Core-Multicore'];
+
+var SERVICES_PM2 = [
+  'JavaControl','NotificadorTurnos','lazoexpressee','microcierrebackend','turno-control'
+];
+
+var SERVICES_WIN = [
+  'Core','LazoExpress','Facturador',
+  'Sincronizador','Fidelizacion WS','Lazo Watch','Lazo MQTT','Sincronizacion Ventas',
+  'Sincronizacion Jornadas','Cierres Printer','Micro Printer','JavaControlProxi',
+  'SincronizacionTurnosHO','Node Turnos','SyncCierreTurno','Lazo Calibracion Server',
+  'TurnosSync','Lazo-Rumbo','Depuracion DB','Lazo Socket','ItecDatatonos','Heimdall',
+  'synchronizer-pos-web','AppTerpel','PaymentOrchestrator','GoPass','FEprinter',
+  'LoyaltyOrchestrator','GoPassPayment','ControllerATG (Veeder Root)','LazoATG (Veeder Root)',
+  'Fidelizacion-Offline','Sincronizacion Recibos','Conciliador Medios Pago','Orquestador Sincronizacion'
+];
+
+var ALL_SERVICES = [{group:'PM2', items:SERVICES_PM2},{group:'Windows Services', items:SERVICES_WIN}];
+
+var selectedCoreTypes = [];
+var data = [];
+var activeFilter = 'all';
+var expanded = {};
+var editingId = null;
+
+/* ---- Core types ---- */
+function buildCoreTypes() {
+  var el = document.getElementById('core-types-container');
+  el.innerHTML = CORE_TYPES.map(function(ct) {
+    var active = selectedCoreTypes.indexOf(ct) !== -1 ? ' active' : '';
+    return '<button class="core-btn'+active+'" data-ct="'+ct+'" onclick="toggleCoreType(this)">'+ct+'</button>';
+  }).join('');
+}
+
+function toggleCoreType(btn) {
+  var ct = btn.dataset.ct;
+  var idx = selectedCoreTypes.indexOf(ct);
+  if (idx === -1) { selectedCoreTypes.push(ct); btn.classList.add('active'); }
+  else { selectedCoreTypes.splice(idx,1); btn.classList.remove('active'); }
+}
+
+/* ---- Service grid ---- */
+function allSvcItems() {
+  var result = [];
+  ALL_SERVICES.forEach(function(g) { g.items.forEach(function(s) { result.push(s); }); });
+  return result;
+}
+
+function buildSvcGrid(preSelected) {
+  var el = document.getElementById('svc-grid');
+  var i = 0;
+  var html = '';
+  ALL_SERVICES.forEach(function(g) {
+    html += '<div class="svc-group-header" data-group="'+g.group+'">'+
+      '<span class="svc-group-label">'+g.group+'</span>'+
+      '<span class="svc-group-count" id="gcnt-'+g.group.replace(/\s/g,'-')+'"></span>'+
+      '</div>';
+    html += '<div class="svc-group-grid" id="gg-'+g.group.replace(/\s/g,'-')+'">';
+    g.items.forEach(function(s) {
+      var checked = preSelected && preSelected.indexOf(s) !== -1;
+      var pm2class = g.group === 'PM2' ? ' pm2' : '';
+      html += '<label class="svc-cb'+pm2class+(checked?' checked':'')+'" id="slbl-'+i+'" for="svc-'+i+'">' +
+        '<input type="checkbox" id="svc-'+i+'" data-svc="'+s+'" onchange="svcChange('+i+',\''+g.group+'\')"'+(checked?' checked':'')+'/>' +
+        '<span>'+s+'</span></label>';
+      i++;
+    });
+    html += '</div>';
+  });
+  el.innerHTML = html;
+  updateGroupCounts();
+}
+
+function svcChange(i, group) {
+  var cb = document.getElementById('svc-'+i);
+  var lbl = document.getElementById('slbl-'+i);
+  if (cb.checked) lbl.classList.add('checked'); else lbl.classList.remove('checked');
+  updateGroupCounts();
+}
+
+function updateGroupCounts() {
+  var i = 0;
+  ALL_SERVICES.forEach(function(g) {
+    var checked = 0;
+    g.items.forEach(function(s) {
+      var cb = document.getElementById('svc-'+i);
+      if (cb && cb.checked) checked++;
+      i++;
+    });
+    var cntEl = document.getElementById('gcnt-'+g.group.replace(/\s/g,'-'));
+    if (cntEl) cntEl.textContent = checked ? checked+'/'+g.items.length+' seleccionados' : '';
+  });
+}
+
+function filterSvcGrid() {
+  var q = (document.getElementById('svc-search').value || '').toLowerCase();
+  var i = 0;
+  ALL_SERVICES.forEach(function(g) {
+    var anyVisible = false;
+    g.items.forEach(function(s) {
+      var lbl = document.getElementById('slbl-'+i);
+      var vis = !q || s.toLowerCase().indexOf(q) !== -1;
+      if (lbl) lbl.style.display = vis ? '' : 'none';
+      if (vis) anyVisible = true;
+      i++;
+    });
+    var hdr = document.querySelector('.svc-group-header[data-group="'+g.group+'"]');
+    var grid = document.getElementById('gg-'+g.group.replace(/\s/g,'-'));
+    if (hdr) hdr.style.display = anyVisible ? '' : 'none';
+    if (grid) grid.style.display = anyVisible ? '' : 'none';
+  });
+}
+
+function toggleAllSvcs(val) {
+  var i = 0;
+  ALL_SERVICES.forEach(function(g) {
+    g.items.forEach(function(s) {
+      var cb = document.getElementById('svc-'+i);
+      var lbl = document.getElementById('slbl-'+i);
+      if (cb) { cb.checked = val; if (val) lbl.classList.add('checked'); else lbl.classList.remove('checked'); }
+      i++;
+    });
+  });
+  updateGroupCounts();
+}
+
+function getSelectedSvcs() {
+  var result = [];
+  var i = 0;
+  ALL_SERVICES.forEach(function(g) {
+    g.items.forEach(function(s) {
+      var cb = document.getElementById('svc-'+i);
+      if (cb && cb.checked) result.push(s);
+      i++;
+    });
+  });
+  return result;
+}
+
+/* ---- Data ---- */
+function load() {
+  try { var s = localStorage.getItem('terpelpos_v3'); if (s) data = JSON.parse(s); } catch(e){}
+  if (!data.length) {
+    data = [{
+      id: 1,
+      prev: '20.0.5', next: '21.3.1', date: '2025-09-30',
+      responsable: 'Jhonatan Ramírez', estado: 'completado',
+      coreTypes: ['core-Gilbarco'],
+      svcs: ['Lazo MQTT','Sincronizacion Recibos','JavaControl','lazoexpressee'],
+      core: 'UPDATE public.wacher_parametros SET codigo=\'LAZO-MQTT\'\n(depurador 4.1)-FNC_notificaciones_pos_venta_combustible',
+      registry: 'fnc_procesar_insertar_productos_registry',
+      scriptsAdd: 'upgrade-core.sql, upgrade-registry.sql',
+      scriptsUpd: 'schema_lazoexpresscore.sql, parametros.sql, lazoexpress_core_49.sql, lazoexpress_core_50.sql',
+      adicionales: 'MENU_RAPIDO1.3.3.bat',
+      scriptAp: 'update20.0.5.sql, update20.0.5registry.sql',
+      bat: 'Actualizacion20.0.5.bat',
+      notas: 'Actualiza binarios POS, aplica cambios en bases de datos, sincroniza medios de pago y configura SSH en puerto 2025\n• Nuevo depurador 4.1 y actualización de procedimientos\n• Creación de índices para mejorar rendimiento\n• Nuevas tablas de reportería y depuración',
+      validaciones: {conexion:true,servicios:true,ventas:true,reportes:false}
+    }];
+    persist();
+  }
+}
+
+function persist() {
+  try { localStorage.setItem('terpelpos_v3', JSON.stringify(data)); } catch(e){}
+}
+
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+/* ---- Modal ---- */
+function openModal(id) {
+  editingId = id || null;
+  document.getElementById('modal-title').textContent = id ? 'Editar actualización' : 'Nueva actualización';
+  document.getElementById('svc-search').value = '';
+
+  if (id) {
+    var r = data.find(function(x){return x.id===id;});
+    if (r) {
+      selectedCoreTypes = (r.coreTypes||[]).slice();
+      buildCoreTypes();
+      buildSvcGrid(r.svcs||[]);
+      document.getElementById('f-prev').value = r.prev||'';
+      document.getElementById('f-new').value = r.next||'';
+      document.getElementById('f-date').value = r.date||'';
+      document.getElementById('f-resp').value = r.responsable||'';
+      document.getElementById('f-estado').value = r.estado||'completado';
+      document.getElementById('f-core').value = r.core||'';
+      document.getElementById('f-registry').value = r.registry||'';
+      document.getElementById('f-scripts-add').value = r.scriptsAdd||'';
+      document.getElementById('f-scripts-upd').value = r.scriptsUpd||'';
+      document.getElementById('f-adicionales').value = r.adicionales||'';
+      document.getElementById('f-script-ap').value = r.scriptAp||'';
+      document.getElementById('f-bat').value = r.bat||'';
+      document.getElementById('f-notas').value = r.notas||'';
+    }
+  } else {
+    selectedCoreTypes = [];
+    buildCoreTypes();
+    buildSvcGrid([]);
+    ['f-prev','f-new','f-date','f-resp','f-core','f-registry','f-scripts-add','f-scripts-upd','f-adicionales','f-script-ap','f-bat','f-notas'].forEach(function(fid){
+      document.getElementById(fid).value='';
+    });
+    document.getElementById('f-estado').value='completado';
+    document.getElementById('f-date').value=new Date().toISOString().split('T')[0];
+  }
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+  editingId = null;
+}
+
+function overlayClick(e) {
+  if (e.target===document.getElementById('modal-overlay')) closeModal();
+}
+
+function saveRecord() {
+  var next = document.getElementById('f-new').value.trim();
+  var prev = document.getElementById('f-prev').value.trim();
+  if (!next||!prev) { alert('Versión anterior y versión nueva son obligatorias.'); return; }
+  var rec = {
+    prev:prev, next:next,
+    date:document.getElementById('f-date').value,
+    responsable:document.getElementById('f-resp').value.trim(),
+    estado:document.getElementById('f-estado').value,
+    coreTypes:selectedCoreTypes.slice(),
+    svcs:getSelectedSvcs(),
+    core:document.getElementById('f-core').value.trim(),
+    registry:document.getElementById('f-registry').value.trim(),
+    scriptsAdd:document.getElementById('f-scripts-add').value.trim(),
+    scriptsUpd:document.getElementById('f-scripts-upd').value.trim(),
+    adicionales:document.getElementById('f-adicionales').value.trim(),
+    scriptAp:document.getElementById('f-script-ap').value.trim(),
+    bat:document.getElementById('f-bat').value.trim(),
+    notas:document.getElementById('f-notas').value.trim()
+  };
+  if (editingId) {
+    var r = data.find(function(x){return x.id===editingId;});
+    if (r) Object.assign(r, rec);
+  } else {
+    rec.id = Date.now();
+    rec.validaciones = {conexion:false,servicios:false,ventas:false,reportes:false};
+    data.unshift(rec);
+  }
+  persist(); closeModal(); render();
+}
+
+function toggleVal(id, key) {
+  var r = data.find(function(x){return x.id===id;});
+  if (!r) return;
+  r.validaciones[key]=!r.validaciones[key];
+  persist(); render();
+}
+
+function deleteRecord(id) {
+  if (!confirm('¿Eliminar este registro?')) return;
+  data=data.filter(function(x){return x.id!==id;});
+  delete expanded[id]; persist(); render();
+}
+
+function toggleExpand(id) {
+  expanded[id]=!expanded[id]; render();
+}
+
+function setFilter(val,el) {
+  activeFilter=val;
+  document.querySelectorAll('.pill').forEach(function(b){b.classList.remove('active');});
+  el.classList.add('active'); render();
+}
+
+var estadoLabel={completado:'Completado','en-progreso':'En progreso',pendiente:'Pendiente',validado:'Validado'};
+var valKeys={conexion:'Conexión POS–BD',servicios:'Servicios levantados',ventas:'Prueba de ventas',reportes:'Validación reportes'};
+
+function render() {
+  var q=(document.getElementById('search').value||'').toLowerCase();
+  var list=data;
+  if (activeFilter!=='all') list=list.filter(function(r){return r.estado===activeFilter;});
+  if (q) list=list.filter(function(r){
+    return (r.prev+r.next+r.responsable+r.notas+r.core+r.registry+(r.svcs||[]).join(' ')+(r.coreTypes||[]).join(' ')).toLowerCase().indexOf(q)!==-1;
+  });
+
+  var total=data.length;
+  var completados=data.filter(function(r){return r.estado==='completado'||r.estado==='validado';}).length;
+  var enProgreso=data.filter(function(r){return r.estado==='en-progreso';}).length;
+  var pendientes=data.filter(function(r){return r.estado==='pendiente';}).length;
+  document.getElementById('stats').innerHTML=
+    '<div class="stat"><div class="stat-label">Total</div><div class="stat-val">'+total+'</div></div>'+
+    '<div class="stat"><div class="stat-label">Completados</div><div class="stat-val green">'+completados+'</div></div>'+
+    '<div class="stat"><div class="stat-label">En progreso</div><div class="stat-val amber">'+enProgreso+'</div></div>'+
+    '<div class="stat"><div class="stat-label">Pendientes</div><div class="stat-val red">'+pendientes+'</div></div>';
+
+  var container=document.getElementById('cards');
+  if (!list.length){container.innerHTML='<div class="empty">No hay registros para esta búsqueda.</div>';return;}
+
+  container.innerHTML=list.map(function(r){
+    var open=expanded[r.id];
+    var valCount=Object.values(r.validaciones).filter(Boolean).length;
+    var svcs=r.svcs||[];
+    var coreTypes=r.coreTypes||[];
+    var bodyHtml='';
+    if (open) {
+      var coreChips=coreTypes.map(function(ct){return '<span class="svc-chip core-chip">'+esc(ct)+'</span>';}).join('');
+      var svcChips=svcs.map(function(s){return '<span class="svc-chip">'+esc(s)+'</span>';}).join('');
+      var valHtml=Object.entries(valKeys).map(function(kv){
+        var done=r.validaciones[kv[0]];
+        return '<div class="val-item'+(done?' done':'')+'" onclick="toggleVal('+r.id+',\''+kv[0]+'\')"><div class="check-circle"></div>'+kv[1]+'</div>';
+      }).join('');
+      var svcsSection='';
+      if (coreTypes.length||svcs.length) {
+        var pm2svcs=svcs.filter(function(s){return SERVICES_PM2.indexOf(s)!==-1;});
+        var winsvcs=svcs.filter(function(s){return SERVICES_WIN.indexOf(s)!==-1;});
+        svcsSection='<div class="sec-label">Servicios compilados</div>'+
+          (coreTypes.length?'<div style="margin-bottom:8px"><div style="font-size:11px;color:var(--text3);margin-bottom:4px">Core</div><div class="svc-chips">'+coreChips+'</div></div>':'')+
+          (pm2svcs.length?'<div style="margin-bottom:8px"><div style="font-size:11px;color:var(--text3);margin-bottom:4px">PM2 ('+pm2svcs.length+')</div><div class="svc-chips">'+pm2svcs.map(function(s){return '<span class="svc-chip pm2-chip">'+esc(s)+'</span>';}).join('')+'</div></div>':'')+
+          (winsvcs.length?'<div><div style="font-size:11px;color:var(--text3);margin-bottom:4px">Windows Services ('+winsvcs.length+')</div><div class="svc-chips">'+winsvcs.map(function(s){return '<span class="svc-chip">'+esc(s)+'</span>';}).join('')+'</div></div>':'');
+      }
+      bodyHtml='<div class="card-body open">'+svcsSection+
+        (r.core?'<div class="sec-label">BD — Core</div><div class="pre-box">'+esc(r.core)+'</div>':'')+
+        (r.registry?'<div class="sec-label">BD — Registry</div><div class="pre-box">'+esc(r.registry)+'</div>':'')+
+        '<div class="sec-label">Scripts y archivos</div><div class="info-grid">'+
+        '<div class="info-box"><div class="lbl">Scripts agregados</div><div class="val mono">'+(esc(r.scriptsAdd)||'—')+'</div></div>'+
+        '<div class="info-box"><div class="lbl">Scripts actualizados</div><div class="val mono">'+(esc(r.scriptsUpd)||'—')+'</div></div>'+
+        '<div class="info-box"><div class="lbl">Script aplicado</div><div class="val mono">'+(esc(r.scriptAp)||'—')+'</div></div>'+
+        '<div class="info-box"><div class="lbl">Bat ejecutado</div><div class="val mono">'+(esc(r.bat)||'—')+'</div></div>'+
+        (r.adicionales?'<div class="info-box" style="grid-column:1/-1"><div class="lbl">Archivos / carpetas adicionales</div><div class="val mono">'+esc(r.adicionales)+'</div></div>':'')+
+        '</div>'+
+        (r.notas?'<div class="sec-label">Notas especiales</div><div class="pre-box">'+esc(r.notas)+'</div>':'')+
+        '<div class="sec-label">Validaciones posteriores</div><div class="val-checks">'+valHtml+'</div>'+
+        '<div class="card-footer">'+
+        '<button class="btn btn-sm" onclick="openModal('+r.id+')">Editar</button>'+
+        '<button class="btn btn-sm" style="color:#A32D2D;border-color:transparent" onclick="deleteRecord('+r.id+')">Eliminar</button>'+
+        '</div></div>';
+    }
+    var pm2count=svcs.filter(function(s){return SERVICES_PM2.indexOf(s)!==-1;}).length;
+    var wincount=svcs.filter(function(s){return SERVICES_WIN.indexOf(s)!==-1;}).length;
+    var svcSummary='';
+    if (pm2count) svcSummary+=' &nbsp;·&nbsp; PM2: '+pm2count;
+    if (wincount) svcSummary+=' &nbsp;·&nbsp; Win: '+wincount;    return '<div class="card">'+
+      '<div class="card-head" onclick="toggleExpand('+r.id+')">'+
+      '<div class="card-left">'+
+      '<span class="ver-badge">v'+esc(r.prev)+'</span>'+
+      '<span class="ver-arrow">&#x2192; v'+esc(r.next)+'</span>'+
+      '<div class="card-info">'+
+      '<div class="card-title">'+(esc(r.responsable)||'Sin responsable')+'</div>'+
+      '<div class="card-sub">'+(r.date||'Sin fecha')+svcSummary+' &nbsp;·&nbsp; '+valCount+'/4 validaciones</div>'+
+      '</div></div>'+
+      '<div class="card-right"><span class="tag tag-'+r.estado+'">'+estadoLabel[r.estado]+'</span><span class="chevron">'+(open?'&#x25B2;':'&#x25BC;')+'</span></div>'+
+      '</div>'+bodyHtml+'</div>';
+  }).join('');
+}
+
+load(); render();
+</script>
+</body>
+</html>
