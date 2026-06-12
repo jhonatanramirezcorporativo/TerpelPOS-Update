@@ -1,662 +1,1384 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>TerpelPOS — Actualizaciones</title>
-<style>
-  :root {
-    --red:#E63B2E; --red-dark:#B02820;
-    --bg:#F7F7F6; --surface:#FFFFFF; --surface2:#F1F0ED;
-    --border:rgba(0,0,0,0.10); --border2:rgba(0,0,0,0.18);
-    --text:#1A1A18; --text2:#5A5A57; --text3:#9A9A96;
-    --green-bg:#EAF3DE; --green-text:#27500A;
-    --amber-bg:#FAEEDA; --amber-text:#633806;
-    --blue-bg:#E6F1FB; --blue-text:#0C447C;
-    --danger-bg:#FCEBEB; --danger-text:#791F1F;
-    --radius:8px; --radius-lg:12px;
-    --font:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
-    --mono:'SF Mono','Fira Code',monospace;
-  }
-  @media(prefers-color-scheme:dark){
-    :root{
-      --bg:#1A1A18; --surface:#242422; --surface2:#2C2C2A;
-      --border:rgba(255,255,255,0.09); --border2:rgba(255,255,255,0.18);
-      --text:#F0EFEB; --text2:#A8A8A4; --text3:#666662;
-      --green-bg:#173404; --green-text:#C0DD97;
-      --amber-bg:#412402; --amber-text:#FAC775;
-      --blue-bg:#042C53; --blue-text:#B5D4F4;
-      --danger-bg:#501313; --danger-text:#F7C1C1;
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TerpelPOS — Actualizaciones</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    /* ─────────────────────────────────────────
+       DESIGN TOKENS
+    ───────────────────────────────────────── */
+    :root {
+      --c-bg:       #f5f5f7;
+      --c-surface:  #ffffff;
+      --c-border:   #e2e2e7;
+      --c-text:     #1d1d1f;
+      --c-muted:    #6e6e73;
+      --c-accent:   #d62b00;       /* Terpel rojo */
+      --c-accent2:  #ff6b35;       /* naranja cálido */
+      --c-green:    #30a46c;
+      --c-yellow:   #e59c0a;
+      --c-blue:     #0a6dbd;
+      --c-purple:   #7c3aed;
+      --c-danger:   #c0392b;
+      --c-shadow:   0 1px 3px rgba(0,0,0,.08), 0 4px 16px rgba(0,0,0,.06);
+      --c-shadow-lg:0 8px 32px rgba(0,0,0,.12);
+      --r:          12px;
+      --r-sm:       8px;
+      --font:       'Inter', system-ui, sans-serif;
+      --mono:       'JetBrains Mono', monospace;
+      --transition: .18s cubic-bezier(.4,0,.2,1);
     }
-  }
-  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-  body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;}
-  .app{max-width:920px;margin:0 auto;padding:24px 16px 60px;}
-  .header{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;flex-wrap:wrap;gap:12px;}
-  .brand{display:flex;align-items:center;gap:12px;}
-  .brand-icon{width:40px;height:40px;border-radius:10px;background:var(--red);display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:600;flex-shrink:0;}
-  .brand-name{font-size:17px;font-weight:600;}
-  .brand-sub{font-size:12px;color:var(--text2);margin-top:1px;}
-  .stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:24px;}
-  .stat{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;}
-  .stat-label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;}
-  .stat-val{font-size:24px;font-weight:600;}
-  .stat-val.green{color:#3B6D11;} .stat-val.amber{color:#854F0B;} .stat-val.red{color:var(--red);}
-  @media(prefers-color-scheme:dark){.stat-val.green{color:#97C459;}.stat-val.amber{color:#EF9F27;}}
-  .toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:16px;}
-  .search{flex:1;min-width:160px;max-width:280px;padding:8px 12px;font-size:13px;border:0.5px solid var(--border2);border-radius:var(--radius);background:var(--surface);color:var(--text);font-family:var(--font);outline:none;}
-  .search:focus{border-color:var(--red);}
-  .pill{font-size:12px;padding:5px 14px;border:0.5px solid var(--border2);border-radius:20px;background:transparent;color:var(--text2);cursor:pointer;font-family:var(--font);}
-  .pill:hover{background:var(--surface2);}
-  .pill.active{background:var(--surface);color:var(--text);font-weight:600;}
-  .btn{padding:8px 16px;font-size:13px;border:0.5px solid var(--border2);border-radius:var(--radius);background:transparent;color:var(--text);cursor:pointer;font-family:var(--font);font-weight:500;}
-  .btn:hover{background:var(--surface2);}
-  .btn-red{background:var(--red);color:#fff;border-color:transparent;}
-  .btn-red:hover{background:var(--red-dark);}
-  .btn-sm{padding:4px 10px;font-size:12px;}
-  .cards{display:flex;flex-direction:column;gap:8px;}
-  .card{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;}
-  .card-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;gap:12px;cursor:pointer;user-select:none;}
-  .card-head:hover{background:var(--surface2);}
-  .card-left{display:flex;align-items:center;gap:10px;flex:1;min-width:0;}
-  .ver-badge{font-size:12px;font-weight:600;padding:3px 10px;border-radius:6px;background:var(--red);color:#fff;white-space:nowrap;flex-shrink:0;}
-  .ver-arrow{font-size:12px;color:var(--text3);flex-shrink:0;}
-  .card-title{font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .card-sub{font-size:12px;color:var(--text2);margin-top:2px;}
-  .card-right{display:flex;align-items:center;gap:8px;flex-shrink:0;}
-  .tag{font-size:11px;font-weight:500;padding:3px 9px;border-radius:6px;white-space:nowrap;}
-  .tag-completado{background:var(--green-bg);color:var(--green-text);}
-  .tag-en-progreso{background:var(--amber-bg);color:var(--amber-text);}
-  .tag-pendiente{background:var(--danger-bg);color:var(--danger-text);}
-  .tag-validado{background:var(--blue-bg);color:var(--blue-text);}
-  .card-body{border-top:0.5px solid var(--border);padding:16px;display:none;}
-  .card-body.open{display:block;}
-  .sec-label{font-size:10px;font-weight:600;color:var(--red);text-transform:uppercase;letter-spacing:.07em;margin:16px 0 8px;}
-  .sec-label:first-child{margin-top:0;}
-  .info-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}
-  .info-box{background:var(--surface2);border-radius:var(--radius);padding:10px 12px;}
-  .info-box .lbl{font-size:11px;color:var(--text3);margin-bottom:3px;}
-  .info-box .val{font-size:12px;color:var(--text);word-break:break-word;line-height:1.5;}
-  .info-box .val.mono{font-family:var(--mono);font-size:11px;}
-  .pre-box{background:var(--surface2);border-radius:var(--radius);padding:10px 12px;font-size:12px;color:var(--text2);line-height:1.6;white-space:pre-wrap;word-break:break-word;}
-  .svc-chips{display:flex;flex-wrap:wrap;gap:5px;}
-  .svc-chip{font-size:11px;padding:3px 9px;border-radius:20px;background:var(--blue-bg);color:var(--blue-text);font-weight:500;}
-  .core-chip{background:var(--amber-bg);color:var(--amber-text);}
-  .pm2-chip{background:var(--green-bg);color:var(--green-text);}
-  .val-checks{display:flex;flex-wrap:wrap;gap:6px;}
-  .val-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text2);padding:5px 10px;border-radius:var(--radius);border:0.5px solid var(--border);background:var(--surface2);cursor:pointer;user-select:none;}
-  .val-item.done{border-color:#3B6D11;background:var(--green-bg);color:var(--green-text);}
-  .check-circle{width:12px;height:12px;border-radius:50%;border:1.5px solid currentColor;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-  .val-item.done .check-circle::after{content:'';width:6px;height:6px;border-radius:50%;background:currentColor;display:block;}
-  .card-footer{display:flex;justify-content:flex-end;gap:6px;margin-top:16px;padding-top:12px;border-top:0.5px solid var(--border);}
-  /* Modal */
-  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:100;overflow-y:auto;padding:24px 16px;}
-  .modal-overlay.open{display:flex;align-items:flex-start;justify-content:center;}
-  .modal{background:var(--surface);border-radius:var(--radius-lg);border:0.5px solid var(--border2);padding:24px;width:100%;max-width:720px;margin:auto;}
-  .modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
-  .modal-title{font-size:16px;font-weight:600;}
-  .modal-close{width:28px;height:28px;border-radius:6px;border:0.5px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;font-family:var(--font);}
-  .modal-close:hover{background:var(--surface2);}
-  .form-sep{font-size:11px;font-weight:600;color:var(--red);text-transform:uppercase;letter-spacing:.07em;padding-bottom:6px;border-bottom:1px solid rgba(230,59,46,0.2);margin:16px 0 10px;}
-  .frow{display:grid;gap:10px;margin-bottom:10px;}
-  .frow.col2{grid-template-columns:1fr 1fr;}
-  .frow.col3{grid-template-columns:1fr 1fr 1fr;}
-  .fg{display:flex;flex-direction:column;gap:4px;}
-  .fg label{font-size:11px;color:var(--text2);font-weight:500;text-transform:uppercase;letter-spacing:.04em;}
-  .fg input,.fg select,.fg textarea{padding:8px 10px;font-size:13px;border:0.5px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text);font-family:var(--font);outline:none;}
-  .fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--red);}
-  .fg textarea{resize:vertical;min-height:60px;}
-  /* Core type pills */
-  .core-types{display:flex;flex-wrap:wrap;gap:6px;padding:6px 0;}
-  .core-btn{font-size:12px;padding:5px 13px;border-radius:20px;border:0.5px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;font-family:var(--font);transition:all .12s;}
-  .core-btn:hover{background:var(--surface2);}
-  .core-btn.active{background:var(--amber-bg);color:var(--amber-text);border-color:transparent;font-weight:600;}
-  /* Service checkboxes */
-  .svc-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
-  .svc-header label{font-size:11px;color:var(--text2);font-weight:500;text-transform:uppercase;letter-spacing:.04em;}
-  .svc-actions{display:flex;gap:8px;}
-  .svc-act-btn{font-size:11px;color:var(--text3);cursor:pointer;background:none;border:none;font-family:var(--font);padding:0;text-decoration:underline;}
-  .svc-act-btn:hover{color:var(--red);}
-  .svc-search{width:100%;padding:6px 10px;font-size:12px;border:0.5px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text);font-family:var(--font);outline:none;margin-bottom:8px;}
-  .svc-search:focus{border-color:var(--red);}
-  .svc-container{max-height:300px;overflow-y:auto;border:0.5px solid var(--border);border-radius:var(--radius);padding:4px;}
-  .svc-group-header{display:flex;align-items:center;justify-content:space-between;padding:6px 8px 4px;margin-top:4px;}
-  .svc-group-header:first-child{margin-top:0;}
-  .svc-group-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--red);}
-  .svc-group-count{font-size:10px;color:var(--text3);}
-  .svc-group-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:2px;margin-bottom:6px;}
-  .svc-cb{display:flex;align-items:center;gap:7px;padding:5px 8px;border-radius:6px;cursor:pointer;border:0.5px solid transparent;user-select:none;}
-  .svc-cb:hover{background:var(--surface2);}
-  .svc-cb.checked{background:var(--blue-bg);border-color:rgba(23,95,165,0.2);}
-  .svc-cb.pm2.checked{background:var(--green-bg);border-color:rgba(59,109,17,0.2);}
-  .svc-cb input[type=checkbox]{width:14px;height:14px;accent-color:var(--red);cursor:pointer;flex-shrink:0;}
-  .svc-cb span{font-size:12px;color:var(--text);line-height:1.3;}
-  .svc-cb.checked span{color:var(--blue-text);font-weight:500;}
-  .svc-cb.pm2.checked span{color:var(--green-text);}
-  .svc-group-divider{height:0.5px;background:var(--border);margin:4px 4px 8px;}
-  .modal-footer{display:flex;justify-content:flex-end;gap:8px;margin-top:20px;}
-  .empty{text-align:center;padding:40px 20px;color:var(--text3);font-size:14px;}
-  @media(max-width:600px){
-    .stats{grid-template-columns:repeat(2,1fr);}
-    .info-grid,.frow.col2,.frow.col3{grid-template-columns:1fr;}
-    .svc-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
-  }
-</style>
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --c-bg:      #0d0d0f;
+        --c-surface: #1a1a1e;
+        --c-border:  #2c2c31;
+        --c-text:    #f0f0f5;
+        --c-muted:   #8a8a91;
+        --c-shadow:  0 1px 3px rgba(0,0,0,.4), 0 4px 16px rgba(0,0,0,.3);
+        --c-shadow-lg:0 8px 32px rgba(0,0,0,.5);
+      }
+    }
+
+    /* ─────────────────────────────────────────
+       RESET & BASE
+    ───────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; -webkit-text-size-adjust: 100%; }
+    body {
+      font-family: var(--font);
+      background: var(--c-bg);
+      color: var(--c-text);
+      min-height: 100vh;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+    button { font-family: inherit; cursor: pointer; border: none; background: none; }
+    input, textarea, select { font-family: inherit; }
+    a { color: inherit; text-decoration: none; }
+
+    /* ─────────────────────────────────────────
+       UTILITIES
+    ───────────────────────────────────────── */
+    .sr-only { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0,0,0,0); }
+    .flex { display: flex; }
+    .items-center { align-items: center; }
+    .gap-2 { gap: .5rem; }
+    .gap-3 { gap: .75rem; }
+    .gap-4 { gap: 1rem; }
+    .ml-auto { margin-left: auto; }
+    .truncate { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+
+    /* ─────────────────────────────────────────
+       LOADING OVERLAY
+    ───────────────────────────────────────── */
+    #app-loading {
+      position: fixed; inset: 0; background: var(--c-bg);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 9999; flex-direction: column; gap: 1rem;
+    }
+    .spinner {
+      width: 36px; height: 36px;
+      border: 3px solid var(--c-border);
+      border-top-color: var(--c-accent);
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-label { font-size: .875rem; color: var(--c-muted); }
+
+    /* ─────────────────────────────────────────
+       LOGIN PAGE
+    ───────────────────────────────────────── */
+    #login-page {
+      display: none;
+      min-height: 100vh;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      background: var(--c-bg);
+    }
+    .login-card {
+      background: var(--c-surface);
+      border: 1px solid var(--c-border);
+      border-radius: 20px;
+      padding: 3rem 2.5rem;
+      max-width: 420px;
+      width: 100%;
+      box-shadow: var(--c-shadow-lg);
+      text-align: center;
+    }
+    .login-logo {
+      width: 64px; height: 64px;
+      background: linear-gradient(135deg, var(--c-accent), var(--c-accent2));
+      border-radius: 16px;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 1.5rem;
+      font-size: 1.8rem;
+    }
+    .login-title { font-size: 1.6rem; font-weight: 700; letter-spacing: -.03em; }
+    .login-sub { color: var(--c-muted); font-size: .9rem; margin-top: .4rem; margin-bottom: 2rem; }
+    .btn-google {
+      display: flex; align-items: center; justify-content: center; gap: .75rem;
+      width: 100%; padding: .85rem 1.5rem;
+      background: var(--c-surface);
+      border: 1.5px solid var(--c-border);
+      border-radius: var(--r);
+      font-size: .95rem; font-weight: 500;
+      transition: border-color var(--transition), box-shadow var(--transition), transform var(--transition);
+      color: var(--c-text);
+    }
+    .btn-google:hover {
+      border-color: var(--c-accent);
+      box-shadow: 0 0 0 3px rgba(214,43,0,.1);
+      transform: translateY(-1px);
+    }
+    .btn-google svg { flex-shrink: 0; }
+    .login-footer { margin-top: 1.5rem; font-size: .78rem; color: var(--c-muted); }
+
+    /* ─────────────────────────────────────────
+       MAIN APP
+    ───────────────────────────────────────── */
+    #main-app { display: none; min-height: 100vh; }
+
+    /* TOPBAR */
+    .topbar {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(255,255,255,.82);
+      backdrop-filter: blur(16px) saturate(180%);
+      -webkit-backdrop-filter: blur(16px) saturate(180%);
+      border-bottom: 1px solid var(--c-border);
+      padding: 0 1.5rem;
+      height: 56px;
+      display: flex; align-items: center; gap: 1rem;
+    }
+    @media (prefers-color-scheme: dark) {
+      .topbar { background: rgba(26,26,30,.88); }
+    }
+    .topbar-brand {
+      display: flex; align-items: center; gap: .65rem;
+      font-weight: 700; font-size: 1rem; letter-spacing: -.02em;
+    }
+    .brand-dot {
+      width: 28px; height: 28px;
+      background: linear-gradient(135deg, var(--c-accent), var(--c-accent2));
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .9rem;
+    }
+    .topbar-user {
+      display: flex; align-items: center; gap: .6rem;
+      margin-left: auto;
+      font-size: .84rem;
+    }
+    .user-avatar {
+      width: 30px; height: 30px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--c-accent), var(--c-accent2));
+      display: flex; align-items: center; justify-content: center;
+      font-size: .75rem; font-weight: 600; color: white;
+      overflow: hidden; flex-shrink: 0;
+    }
+    .user-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .user-info { display: flex; flex-direction: column; line-height: 1.2; }
+    .user-name { font-weight: 600; color: var(--c-text); font-size: .83rem; }
+    .user-email { color: var(--c-muted); font-size: .74rem; }
+    .btn-logout {
+      padding: .4rem .85rem; border-radius: 8px;
+      font-size: .8rem; font-weight: 500;
+      border: 1px solid var(--c-border);
+      color: var(--c-muted);
+      transition: background var(--transition), color var(--transition);
+      white-space: nowrap;
+    }
+    .btn-logout:hover { background: var(--c-danger); color: white; border-color: var(--c-danger); }
+
+    /* PAGE CONTENT */
+    .page-content { max-width: 1280px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+    /* PAGE HEADER */
+    .page-header {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      gap: 1rem; flex-wrap: wrap; margin-bottom: 1.75rem;
+    }
+    .page-title { font-size: 1.6rem; font-weight: 700; letter-spacing: -.04em; }
+    .page-sub { font-size: .875rem; color: var(--c-muted); margin-top: .2rem; }
+
+    /* STATS */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 1rem; margin-bottom: 1.75rem;
+    }
+    .stat-card {
+      background: var(--c-surface);
+      border: 1px solid var(--c-border);
+      border-radius: var(--r);
+      padding: 1.1rem 1.2rem;
+      box-shadow: var(--c-shadow);
+    }
+    .stat-label { font-size: .78rem; font-weight: 500; color: var(--c-muted); text-transform: uppercase; letter-spacing: .05em; }
+    .stat-value { font-size: 2rem; font-weight: 700; letter-spacing: -.04em; margin-top: .2rem; font-variant-numeric: tabular-nums; }
+    .stat-card.total .stat-value { color: var(--c-text); }
+    .stat-card.completada .stat-value { color: var(--c-green); }
+    .stat-card.progreso .stat-value { color: var(--c-blue); }
+    .stat-card.pendiente .stat-value { color: var(--c-yellow); }
+    .stat-card.validado .stat-value { color: var(--c-purple); }
+
+    /* TOOLBAR */
+    .toolbar {
+      display: flex; gap: .75rem; flex-wrap: wrap; margin-bottom: 1.25rem; align-items: center;
+    }
+    .search-wrap {
+      flex: 1 1 220px; position: relative;
+    }
+    .search-wrap svg {
+      position: absolute; left: .75rem; top: 50%; transform: translateY(-50%);
+      color: var(--c-muted); pointer-events: none;
+    }
+    .search-input {
+      width: 100%; padding: .6rem .75rem .6rem 2.4rem;
+      border: 1px solid var(--c-border);
+      border-radius: var(--r-sm);
+      background: var(--c-surface);
+      font-size: .875rem; color: var(--c-text);
+      outline: none; transition: border-color var(--transition), box-shadow var(--transition);
+    }
+    .search-input:focus { border-color: var(--c-accent); box-shadow: 0 0 0 3px rgba(214,43,0,.1); }
+    .filter-tabs { display: flex; gap: .35rem; flex-wrap: wrap; }
+    .filter-tab {
+      padding: .45rem .9rem; border-radius: 20px;
+      font-size: .8rem; font-weight: 500;
+      border: 1px solid var(--c-border);
+      background: var(--c-surface);
+      color: var(--c-muted);
+      transition: all var(--transition);
+    }
+    .filter-tab:hover { border-color: var(--c-accent); color: var(--c-accent); }
+    .filter-tab.active { background: var(--c-accent); color: white; border-color: var(--c-accent); }
+    .btn-new {
+      display: flex; align-items: center; gap: .5rem;
+      padding: .6rem 1.2rem; border-radius: var(--r-sm);
+      background: var(--c-accent); color: white;
+      font-size: .875rem; font-weight: 600;
+      transition: opacity var(--transition), transform var(--transition);
+      white-space: nowrap;
+    }
+    .btn-new:hover { opacity: .88; transform: translateY(-1px); }
+
+    /* TABLE */
+    .table-wrap {
+      background: var(--c-surface);
+      border: 1px solid var(--c-border);
+      border-radius: var(--r);
+      box-shadow: var(--c-shadow);
+      overflow: hidden;
+    }
+    .table-scroll { overflow-x: auto; }
+    table {
+      width: 100%; border-collapse: collapse;
+      font-size: .84rem; min-width: 860px;
+    }
+    thead { background: var(--c-bg); }
+    th {
+      padding: .75rem 1rem;
+      text-align: left; font-size: .72rem; font-weight: 600;
+      text-transform: uppercase; letter-spacing: .06em;
+      color: var(--c-muted); white-space: nowrap;
+      border-bottom: 1px solid var(--c-border);
+    }
+    td {
+      padding: .85rem 1rem;
+      border-bottom: 1px solid var(--c-border);
+      vertical-align: middle;
+    }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr { transition: background var(--transition); }
+    tbody tr:hover { background: var(--c-bg); }
+
+    /* BADGES */
+    .badge {
+      display: inline-flex; align-items: center; gap: .3rem;
+      padding: .22rem .65rem; border-radius: 20px;
+      font-size: .73rem; font-weight: 600; white-space: nowrap;
+    }
+    .badge-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+    .badge.pendiente   { background: #fef3c7; color: #92400e; }
+    .badge.en-progreso { background: #dbeafe; color: #1e3a8a; }
+    .badge.completada  { background: #dcfce7; color: #14532d; }
+    .badge.validado    { background: #f3e8ff; color: #4c1d95; }
+    @media (prefers-color-scheme: dark) {
+      .badge.pendiente   { background: rgba(234,179,8,.15); color: #fde047; }
+      .badge.en-progreso { background: rgba(59,130,246,.15); color: #93c5fd; }
+      .badge.completada  { background: rgba(34,197,94,.15); color: #86efac; }
+      .badge.validado    { background: rgba(124,58,237,.15); color: #c4b5fd; }
+    }
+    .badge-dot.pendiente   { background: #f59e0b; }
+    .badge-dot.en-progreso { background: #3b82f6; }
+    .badge-dot.completada  { background: #22c55e; }
+    .badge-dot.validado    { background: #8b5cf6; }
+
+    .version-chip {
+      font-family: var(--mono); font-size: .75rem;
+      background: var(--c-bg);
+      border: 1px solid var(--c-border);
+      border-radius: 6px;
+      padding: .15rem .5rem;
+      color: var(--c-accent);
+      white-space: nowrap;
+    }
+    .arrow-icon { color: var(--c-muted); margin: 0 .15rem; }
+    .date-cell { color: var(--c-muted); font-size: .78rem; white-space: nowrap; }
+    .responsible { font-weight: 500; }
+
+    /* ROW ACTIONS */
+    .row-actions { display: flex; gap: .4rem; }
+    .btn-icon {
+      width: 30px; height: 30px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      border: 1px solid var(--c-border);
+      color: var(--c-muted);
+      transition: all var(--transition);
+    }
+    .btn-icon:hover.edit { background: var(--c-blue); color: white; border-color: var(--c-blue); }
+    .btn-icon:hover.delete { background: var(--c-danger); color: white; border-color: var(--c-danger); }
+    .btn-icon:hover.view { background: var(--c-green); color: white; border-color: var(--c-green); }
+
+    /* EMPTY STATE */
+    .empty-state {
+      padding: 4rem 2rem; text-align: center;
+      color: var(--c-muted);
+    }
+    .empty-icon { font-size: 2.5rem; margin-bottom: .75rem; }
+    .empty-title { font-size: 1rem; font-weight: 600; color: var(--c-text); }
+    .empty-sub { font-size: .875rem; margin-top: .25rem; }
+
+    /* TABLE FOOTER */
+    .table-footer {
+      padding: .75rem 1rem;
+      border-top: 1px solid var(--c-border);
+      font-size: .8rem; color: var(--c-muted);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+
+    /* MODAL */
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 500;
+      background: rgba(0,0,0,.5);
+      backdrop-filter: blur(4px);
+      display: flex; align-items: flex-start; justify-content: center;
+      padding: 2rem 1rem; overflow-y: auto;
+      opacity: 0; pointer-events: none;
+      transition: opacity var(--transition);
+    }
+    .modal-overlay.open { opacity: 1; pointer-events: all; }
+    .modal {
+      background: var(--c-surface);
+      border: 1px solid var(--c-border);
+      border-radius: 18px;
+      width: 100%; max-width: 720px;
+      box-shadow: var(--c-shadow-lg);
+      transform: translateY(20px);
+      transition: transform var(--transition);
+    }
+    .modal-overlay.open .modal { transform: translateY(0); }
+
+    .modal-header {
+      padding: 1.4rem 1.6rem 1rem;
+      border-bottom: 1px solid var(--c-border);
+      display: flex; align-items: center; gap: .75rem;
+    }
+    .modal-title { font-size: 1.05rem; font-weight: 700; letter-spacing: -.02em; }
+    .modal-close {
+      margin-left: auto; width: 32px; height: 32px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      border: 1px solid var(--c-border); color: var(--c-muted);
+      transition: background var(--transition);
+    }
+    .modal-close:hover { background: var(--c-danger); color: white; border-color: var(--c-danger); }
+    .modal-body { padding: 1.4rem 1.6rem; display: flex; flex-direction: column; gap: 1.2rem; }
+    .modal-footer {
+      padding: 1rem 1.6rem 1.4rem;
+      border-top: 1px solid var(--c-border);
+      display: flex; gap: .75rem; justify-content: flex-end;
+    }
+
+    /* FORM */
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    @media (max-width: 560px) { .form-row { grid-template-columns: 1fr; } }
+    .form-row.three { grid-template-columns: 1fr 1fr 1fr; }
+    @media (max-width: 640px) { .form-row.three { grid-template-columns: 1fr 1fr; } }
+
+    .field { display: flex; flex-direction: column; gap: .4rem; }
+    .field label { font-size: .8rem; font-weight: 600; color: var(--c-muted); text-transform: uppercase; letter-spacing: .04em; }
+    .field input, .field select, .field textarea {
+      padding: .65rem .8rem;
+      border: 1px solid var(--c-border);
+      border-radius: var(--r-sm);
+      background: var(--c-bg);
+      color: var(--c-text);
+      font-size: .875rem;
+      outline: none; width: 100%;
+      transition: border-color var(--transition), box-shadow var(--transition);
+    }
+    .field input:focus, .field select:focus, .field textarea:focus {
+      border-color: var(--c-accent);
+      box-shadow: 0 0 0 3px rgba(214,43,0,.1);
+      background: var(--c-surface);
+    }
+    .field textarea { resize: vertical; min-height: 80px; }
+    .field select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236e6e73' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right .7rem center; padding-right: 2rem; }
+
+    /* SECTION GROUP */
+    .section-group {
+      border: 1px solid var(--c-border);
+      border-radius: var(--r-sm);
+      overflow: hidden;
+    }
+    .section-group-header {
+      background: var(--c-bg);
+      padding: .6rem 1rem;
+      font-size: .78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em;
+      color: var(--c-muted); border-bottom: 1px solid var(--c-border);
+    }
+    .section-group-body { padding: 1rem; display: flex; flex-direction: column; gap: .85rem; }
+
+    /* CHECKBOX GRID */
+    .check-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: .5rem; }
+    .check-item {
+      display: flex; align-items: center; gap: .5rem;
+      padding: .45rem .65rem; border-radius: 8px;
+      border: 1px solid var(--c-border);
+      background: var(--c-surface);
+      cursor: pointer; font-size: .82rem;
+      transition: border-color var(--transition), background var(--transition);
+      user-select: none;
+    }
+    .check-item:hover { border-color: var(--c-accent); }
+    .check-item input[type="checkbox"] { accent-color: var(--c-accent); }
+    .check-item.checked { border-color: var(--c-accent); background: rgba(214,43,0,.05); }
+
+    /* VALIDACIONES */
+    .val-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: .5rem; }
+    .val-item {
+      display: flex; align-items: center; gap: .6rem;
+      padding: .55rem .8rem; border-radius: 8px;
+      border: 1px solid var(--c-border);
+      background: var(--c-surface);
+      font-size: .82rem; cursor: pointer;
+      transition: all var(--transition); user-select: none;
+    }
+    .val-item.ok { border-color: var(--c-green); background: rgba(48,164,108,.07); }
+    .val-item input[type="checkbox"] { accent-color: var(--c-green); }
+
+    /* DETAIL MODAL */
+    .detail-section { display: flex; flex-direction: column; gap: .75rem; }
+    .detail-row { display: flex; gap: .5rem; flex-wrap: wrap; }
+    .detail-label {
+      font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em;
+      color: var(--c-muted); min-width: 120px; padding-top: .1rem;
+    }
+    .detail-value { font-size: .875rem; flex: 1; }
+    .tag-list { display: flex; flex-wrap: wrap; gap: .35rem; }
+    .tag {
+      font-size: .73rem; padding: .2rem .55rem; border-radius: 6px;
+      background: var(--c-bg); border: 1px solid var(--c-border);
+      font-family: var(--mono);
+    }
+
+    /* BUTTONS */
+    .btn {
+      padding: .65rem 1.25rem; border-radius: var(--r-sm);
+      font-size: .875rem; font-weight: 600;
+      transition: all var(--transition);
+    }
+    .btn-primary { background: var(--c-accent); color: white; }
+    .btn-primary:hover { opacity: .88; }
+    .btn-secondary { background: var(--c-bg); color: var(--c-text); border: 1px solid var(--c-border); }
+    .btn-secondary:hover { border-color: var(--c-accent); }
+
+    /* TOAST */
+    #toast-container {
+      position: fixed; bottom: 1.5rem; right: 1.5rem;
+      display: flex; flex-direction: column; gap: .5rem;
+      z-index: 9998; pointer-events: none;
+    }
+    .toast {
+      padding: .75rem 1.2rem; border-radius: 10px;
+      font-size: .875rem; font-weight: 500;
+      box-shadow: var(--c-shadow-lg);
+      animation: slideIn .25s ease;
+      pointer-events: all;
+    }
+    .toast.success { background: var(--c-green); color: white; }
+    .toast.error   { background: var(--c-danger); color: white; }
+    .toast.info    { background: var(--c-blue); color: white; }
+    @keyframes slideIn { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+    /* CONFIRM DIALOG */
+    .confirm-overlay {
+      position: fixed; inset: 0; z-index: 600;
+      background: rgba(0,0,0,.5); backdrop-filter: blur(4px);
+      display: flex; align-items: center; justify-content: center;
+      padding: 1rem; opacity: 0; pointer-events: none;
+      transition: opacity var(--transition);
+    }
+    .confirm-overlay.open { opacity: 1; pointer-events: all; }
+    .confirm-box {
+      background: var(--c-surface);
+      border: 1px solid var(--c-border);
+      border-radius: var(--r); padding: 2rem;
+      max-width: 380px; width: 100%;
+      box-shadow: var(--c-shadow-lg); text-align: center;
+    }
+    .confirm-icon { font-size: 2.5rem; margin-bottom: .75rem; }
+    .confirm-title { font-size: 1.05rem; font-weight: 700; margin-bottom: .4rem; }
+    .confirm-sub { font-size: .875rem; color: var(--c-muted); margin-bottom: 1.5rem; }
+    .confirm-actions { display: flex; gap: .75rem; justify-content: center; }
+
+    /* RESPONSIVE */
+    @media (max-width: 640px) {
+      .topbar { padding: 0 1rem; }
+      .page-content { padding: 1.25rem 1rem; }
+      .user-info { display: none; }
+      .page-title { font-size: 1.3rem; }
+    }
+    @media (max-width: 480px) {
+      .topbar-brand span { display: none; }
+    }
+  </style>
 </head>
 <body>
-<div class="app">
-  <div class="header">
-    <div class="brand">
-      <div class="brand-icon">POS</div>
-      <div>
-        <div class="brand-name">TerpelPOS — Actualizaciones</div>
-        <div class="brand-sub">Registro de versiones y cambios</div>
-      </div>
-    </div>
-    <button class="btn btn-red" onclick="openModal()">+ Nueva actualización</button>
-  </div>
-  <div class="stats" id="stats"></div>
-  <div class="toolbar">
-    <input class="search" id="search" placeholder="Buscar versión, responsable, servicio..." oninput="render()"/>
-    <button class="pill active" data-f="all" onclick="setFilter('all',this)">Todas</button>
-    <button class="pill" data-f="pendiente" onclick="setFilter('pendiente',this)">Pendiente</button>
-    <button class="pill" data-f="en-progreso" onclick="setFilter('en-progreso',this)">En progreso</button>
-    <button class="pill" data-f="completado" onclick="setFilter('completado',this)">Completado</button>
-    <button class="pill" data-f="validado" onclick="setFilter('validado',this)">Validado</button>
-  </div>
-  <div class="cards" id="cards"></div>
+
+<!-- LOADING -->
+<div id="app-loading">
+  <div class="spinner"></div>
+  <span class="loading-label">Iniciando TerpelPOS…</span>
 </div>
 
-<div class="modal-overlay" id="modal-overlay" onclick="overlayClick(event)">
-  <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title" id="modal-title">Nueva actualización</div>
-      <button class="modal-close" onclick="closeModal()">&#x2715;</button>
+<!-- LOGIN -->
+<div id="login-page">
+  <div class="login-card">
+    <div class="login-logo">⛽</div>
+    <h1 class="login-title">TerpelPOS</h1>
+    <p class="login-sub">Control de cambios y actualizaciones de software</p>
+    <button class="btn-google" id="btn-google-login">
+      <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+      Continuar con Google
+    </button>
+    <p class="login-footer">Acceso exclusivo para el equipo de TerpelPOS</p>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="main-app">
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="topbar-brand">
+      <div class="brand-dot">⛽</div>
+      <span>TerpelPOS — Actualizaciones</span>
+    </div>
+    <div class="topbar-user">
+      <div class="user-avatar" id="user-avatar">?</div>
+      <div class="user-info">
+        <span class="user-name" id="user-name-display">—</span>
+        <span class="user-email" id="user-email-display">—</span>
+      </div>
+      <button class="btn-logout" id="btn-logout">Cerrar sesión</button>
+    </div>
+  </header>
+
+  <!-- CONTENT -->
+  <main class="page-content">
+    <div class="page-header">
+      <div>
+        <h2 class="page-title">Control de Actualizaciones</h2>
+        <p class="page-sub">Registro de cambios, despliegues y versiones de software</p>
+      </div>
+      <button class="btn-new" id="btn-open-create">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Nueva actualización
+      </button>
     </div>
 
-    <div class="form-sep">Información general</div>
-    <div class="frow col3">
-      <div class="fg"><label>Versión anterior</label><input id="f-prev" placeholder="20.0.5"/></div>
-      <div class="fg"><label>Versión nueva</label><input id="f-new" placeholder="21.3.1"/></div>
-      <div class="fg"><label>Fecha</label><input id="f-date" type="date"/></div>
-    </div>
-    <div class="frow col2">
-      <div class="fg"><label>Responsable</label><input id="f-resp" placeholder="Nombre completo"/></div>
-      <div class="fg"><label>Estado</label>
-        <select id="f-estado">
-          <option value="pendiente">Pendiente</option>
-          <option value="en-progreso">En progreso</option>
-          <option value="completado" selected>Completado</option>
-          <option value="validado">Validado</option>
-        </select>
+    <!-- STATS -->
+    <div class="stats-grid" id="stats-grid">
+      <div class="stat-card total">
+        <div class="stat-label">Total</div>
+        <div class="stat-value" id="stat-total">–</div>
+      </div>
+      <div class="stat-card completada">
+        <div class="stat-label">Completadas</div>
+        <div class="stat-value" id="stat-completada">–</div>
+      </div>
+      <div class="stat-card progreso">
+        <div class="stat-label">En progreso</div>
+        <div class="stat-value" id="stat-progreso">–</div>
+      </div>
+      <div class="stat-card pendiente">
+        <div class="stat-label">Pendientes</div>
+        <div class="stat-value" id="stat-pendiente">–</div>
+      </div>
+      <div class="stat-card validado">
+        <div class="stat-label">Validadas</div>
+        <div class="stat-value" id="stat-validado">–</div>
       </div>
     </div>
 
-    <div class="form-sep">Servicios compilados</div>
-    <div class="fg">
-      <label>Tipo de Core <span style="font-weight:400;text-transform:none;font-size:11px;color:var(--text3)">— selecciona los que aplican</span></label>
-      <div class="core-types" id="core-types-container"></div>
+    <!-- TOOLBAR -->
+    <div class="toolbar">
+      <div class="search-wrap">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" class="search-input" id="search-input" placeholder="Buscar por versión, responsable, notas, servicios…" />
+      </div>
+      <div class="filter-tabs" id="filter-tabs">
+        <button class="filter-tab active" data-filter="todas">Todas</button>
+        <button class="filter-tab" data-filter="Pendiente">Pendiente</button>
+        <button class="filter-tab" data-filter="En progreso">En progreso</button>
+        <button class="filter-tab" data-filter="Completada">Completada</button>
+        <button class="filter-tab" data-filter="Validado">Validado</button>
+      </div>
     </div>
 
-    <div style="margin-top:12px;">
-      <div class="svc-header">
-        <label>Servicios actualizados en este compilado</label>
-        <div class="svc-actions">
-          <button class="svc-act-btn" onclick="toggleAllSvcs(true)">Seleccionar todo</button>
-          <button class="svc-act-btn" onclick="toggleAllSvcs(false)">Limpiar</button>
+    <!-- TABLE -->
+    <div class="table-wrap">
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Versión</th>
+              <th>Fecha</th>
+              <th>Responsable</th>
+              <th>Estado</th>
+              <th>Core</th>
+              <th>Servicios</th>
+              <th>Validaciones</th>
+              <th>Creado por</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="table-body">
+            <tr><td colspan="9"><div class="empty-state"><div class="spinner" style="margin:0 auto"></div></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="table-footer" id="table-footer">
+        <span id="records-count">Cargando…</span>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- MODAL: CREAR / EDITAR -->
+<div class="modal-overlay" id="form-modal">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-header">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--c-accent)" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+      <h3 class="modal-title" id="modal-title">Nueva actualización</h3>
+      <button class="modal-close" id="modal-close" aria-label="Cerrar">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" id="modal-body">
+
+      <!-- VERSIÓN Y FECHA -->
+      <div class="form-row three">
+        <div class="field">
+          <label>Versión anterior</label>
+          <input type="text" id="f-version_anterior" placeholder="v2.4.1" />
+        </div>
+        <div class="field">
+          <label>Versión nueva</label>
+          <input type="text" id="f-version_nueva" placeholder="v2.5.0" />
+        </div>
+        <div class="field">
+          <label>Fecha</label>
+          <input type="date" id="f-fecha" />
         </div>
       </div>
-      <input class="svc-search" id="svc-search" placeholder="Filtrar servicios..." oninput="filterSvcGrid()"/>
-      <div class="svc-container" id="svc-grid"></div>
-    </div>
 
-    <div class="form-sep">Base de datos</div>
-    <div class="frow">
-      <div class="fg"><label>Cambios Core (SQL / procedimientos)</label><textarea id="f-core" rows="3" placeholder="UPDATE public.wacher_parametros SET..."></textarea></div>
-    </div>
-    <div class="frow">
-      <div class="fg"><label>Cambios Registry (SQL / funciones)</label><textarea id="f-registry" rows="2" placeholder="fnc_procesar_insertar_productos_registry"></textarea></div>
-    </div>
+      <!-- RESPONSABLE Y ESTADO -->
+      <div class="form-row">
+        <div class="field">
+          <label>Responsable</label>
+          <input type="text" id="f-responsable" placeholder="Nombre del responsable" />
+        </div>
+        <div class="field">
+          <label>Estado</label>
+          <select id="f-estado">
+            <option value="Pendiente">Pendiente</option>
+            <option value="En progreso">En progreso</option>
+            <option value="Completada">Completada</option>
+            <option value="Validado">Validado</option>
+          </select>
+        </div>
+      </div>
 
-    <div class="form-sep">Scripts de actualización</div>
-    <div class="frow col2">
-      <div class="fg"><label>Scripts agregados</label><input id="f-scripts-add" placeholder="upgrade-core.sql, upgrade-registry.sql"/></div>
-      <div class="fg"><label>Scripts actualizados</label><input id="f-scripts-upd" placeholder="schema_lazoexpresscore.sql..."/></div>
-    </div>
-    <div class="frow col2">
-      <div class="fg"><label>Script aplicado</label><input id="f-script-ap" placeholder="update20.0.5.sql"/></div>
-      <div class="fg"><label>Bat ejecutado</label><input id="f-bat" placeholder="Actualizacion20.0.5.bat"/></div>
-    </div>
-    <div class="frow">
-      <div class="fg"><label>Archivos / carpetas adicionales</label><input id="f-adicionales" placeholder="MENU_RAPIDO1.3.3.bat, carpeta XYZ..."/></div>
-    </div>
+      <!-- CORE TYPES -->
+      <div class="section-group">
+        <div class="section-group-header">🔧 Tipos de Core</div>
+        <div class="section-group-body">
+          <div class="check-grid" id="core-types-grid"></div>
+        </div>
+      </div>
 
-    <div class="form-sep">Notas y observaciones</div>
-    <div class="frow">
-      <div class="fg"><label>Notas especiales</label><textarea id="f-notas" rows="4" placeholder="Actualiza binarios POS, aplica cambios en bases de datos..."></textarea></div>
-    </div>
+      <!-- SERVICIOS PM2 -->
+      <div class="section-group">
+        <div class="section-group-header">⚡ Servicios PM2</div>
+        <div class="section-group-body">
+          <div class="check-grid" id="servicios-pm2-grid"></div>
+        </div>
+      </div>
 
+      <!-- SERVICIOS WINDOWS -->
+      <div class="section-group">
+        <div class="section-group-header">🪟 Servicios Windows</div>
+        <div class="section-group-body">
+          <div class="check-grid" id="servicios-win-grid"></div>
+        </div>
+      </div>
+
+      <!-- SCRIPTS / ADICIONALES -->
+      <div class="form-row">
+        <div class="field">
+          <label>Scripts ADD</label>
+          <textarea id="f-scripts_add" placeholder="Scripts de adición…"></textarea>
+        </div>
+        <div class="field">
+          <label>Scripts UPD</label>
+          <textarea id="f-scripts_upd" placeholder="Scripts de actualización…"></textarea>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="field">
+          <label>Script AP</label>
+          <textarea id="f-script_ap" placeholder="Script AP…"></textarea>
+        </div>
+        <div class="field">
+          <label>BAT</label>
+          <textarea id="f-bat" placeholder="Archivos .bat…"></textarea>
+        </div>
+      </div>
+      <div class="field">
+        <label>Adicionales</label>
+        <textarea id="f-adicionales" placeholder="Otros archivos o consideraciones adicionales…"></textarea>
+      </div>
+
+      <!-- VALIDACIONES -->
+      <div class="section-group">
+        <div class="section-group-header">✅ Validaciones</div>
+        <div class="section-group-body">
+          <div class="val-grid" id="validaciones-grid"></div>
+        </div>
+      </div>
+
+      <!-- NOTAS -->
+      <div class="field">
+        <label>Notas / Observaciones</label>
+        <textarea id="f-notas" rows="3" placeholder="Notas relevantes sobre esta actualización…"></textarea>
+      </div>
+
+    </div><!-- end modal-body -->
     <div class="modal-footer">
-      <button class="btn" onclick="closeModal()">Cancelar</button>
-      <button class="btn btn-red" onclick="saveRecord()">Guardar actualización</button>
+      <button class="btn btn-secondary" id="modal-cancel">Cancelar</button>
+      <button class="btn btn-primary" id="modal-save">
+        <span id="save-label">Guardar actualización</span>
+      </button>
     </div>
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>  
+<!-- MODAL: DETALLE -->
+<div class="modal-overlay" id="detail-modal">
+  <div class="modal" role="dialog" aria-modal="true">
+    <div class="modal-header">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--c-accent)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <h3 class="modal-title" id="detail-title">Detalle de actualización</h3>
+      <button class="modal-close" id="detail-close">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" id="detail-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" id="detail-close-btn">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM DIALOG -->
+<div class="confirm-overlay" id="confirm-overlay">
+  <div class="confirm-box">
+    <div class="confirm-icon">🗑️</div>
+    <h4 class="confirm-title">¿Eliminar actualización?</h4>
+    <p class="confirm-sub">Esta acción no se puede deshacer. El registro se eliminará permanentemente.</p>
+    <div class="confirm-actions">
+      <button class="btn btn-secondary" id="confirm-cancel">Cancelar</button>
+      <button class="btn btn-primary" id="confirm-delete" style="background:var(--c-danger)">Eliminar</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div id="toast-container"></div>
+
+<!-- ─────────────────────────────────────────
+     JAVASCRIPT
+───────────────────────────────────────── -->
 <script>
-  const supabase = window.supabase.createClient(
-    'https://zlcqffnhccsqqjcvjijn.supabase.co',
-    'sb_publishable_cmnaUYNGAEHiICE5yDFYRA_LtXfrC7i'
-);
+/* ════════════════════════════════════════
+   SUPABASE CONFIG
+   Reemplaza SUPABASE_PUBLISHABLE_KEY con tu clave anon/public real
+════════════════════════════════════════ */
+const SUPABASE_URL = 'https://zlcqffnhccsqqjcvjijn.supabase.co';
+const SUPABASE_KEY = 'REEMPLAZAR_POR_MI_CLAVE'; // <-- reemplaza aquí
 
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+/* ════════════════════════════════════════
+   CONSTANTS
+════════════════════════════════════════ */
+const CORE_TYPES = [
+  'core-Gilbarco','core-Wayne','core-Tokheim',
+  'core-Mepsan','Core-HongYang','Core-Multicore'
+];
+const SERVICIOS_PM2 = [
+  'JavaControl','NotificadorTurnos','lazoexpressee',
+  'microcierrebackend','turno-control'
+];
+const SERVICIOS_WIN = [
+  'Core','LazoExpress','Facturador','Sincronizador',
+  'Fidelizacion WS','Lazo Watch','Lazo MQTT',
+  'Sincronizacion Ventas','Sincronizacion Jornadas',
+  'Cierres Printer','Micro Printer','JavaControlProxi',
+  'SincronizacionTurnosHO','Node Turnos','SyncCierreTurno',
+  'Lazo Calibracion Server','TurnosSync','Lazo-Rumbo',
+  'Depuracion DB','Lazo Socket','ItecDatatonos','Heimdall',
+  'synchronizer-pos-web','AppTerpel','PaymentOrchestrator',
+  'GoPass','FEprinter','LoyaltyOrchestrator','GoPassPayment',
+  'ControllerATG (Veeder Root)','LazoATG (Veeder Root)',
+  'Fidelizacion-Offline','Sincronizacion Recibos',
+  'Conciliador Medios Pago','Orquestador Sincronizacion'
+];
+const VALIDACIONES_LIST = [
+  'Conexión POS-BD',
+  'Servicios levantados',
+  'Prueba de ventas',
+  'Validación reportes'
+];
+
+/* ════════════════════════════════════════
+   STATE
+════════════════════════════════════════ */
 let currentUser = null;
+let allRecords  = [];
+let editingId   = null;
+let deleteTarget= null;
+let activeFilter= 'todas';
+let searchTerm  = '';
 
-async function loginGoogle() {
-
-    await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-            redirectTo: window.location.href
-        }
-    });
-
+/* ════════════════════════════════════════
+   HELPERS
+════════════════════════════════════════ */
+function fmtDate(d) {
+  if (!d) return '—';
+  const dt = new Date(d);
+  return dt.toLocaleDateString('es-CO', { year:'numeric', month:'short', day:'numeric' });
+}
+function slugEstado(e) {
+  return (e || '').toLowerCase().replace(' ', '-');
+}
+function safeArr(v) {
+  if (!v) return [];
+  if (Array.isArray(v)) return v;
+  try { return JSON.parse(v); } catch { return v.split(',').map(s => s.trim()).filter(Boolean); }
+}
+function toast(msg, type = 'success') {
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.textContent = msg;
+  document.getElementById('toast-container').appendChild(t);
+  setTimeout(() => t.remove(), 3200);
 }
 
-async function logout() {
-    await supabase.auth.signOut();
-    location.reload();
-}
-
-async function checkSession() {
-
-    const { data } = await supabase.auth.getUser();
-
-    currentUser = data.user;
-
-    if (!currentUser) {
-
-        document.body.innerHTML = `
-            <div style="
-                display:flex;
-                justify-content:center;
-                align-items:center;
-                height:100vh;
-                flex-direction:column;
-                gap:20px;
-            ">
-                <h2>TerpelPOS Update</h2>
-
-                <button onclick="loginGoogle()"
-                    style="
-                    padding:12px 20px;
-                    cursor:pointer;
-                    ">
-                    Iniciar sesión con Google
-                </button>
-            </div>
-        `;
-
-        return false;
-    }
-
-    return true;
-}
-  
-var CORE_TYPES = ['core-Gilbarco','core-Wayne','core-Tokheim','core-Mepsan','Core-HongYang','Core-Multicore'];
-
-var SERVICES_PM2 = [
-  'JavaControl','NotificadorTurnos','lazoexpressee','microcierrebackend','turno-control'
-];
-
-var SERVICES_WIN = [
-  'Core','LazoExpress','Facturador',
-  'Sincronizador','Fidelizacion WS','Lazo Watch','Lazo MQTT','Sincronizacion Ventas',
-  'Sincronizacion Jornadas','Cierres Printer','Micro Printer','JavaControlProxi',
-  'SincronizacionTurnosHO','Node Turnos','SyncCierreTurno','Lazo Calibracion Server',
-  'TurnosSync','Lazo-Rumbo','Depuracion DB','Lazo Socket','ItecDatatonos','Heimdall',
-  'synchronizer-pos-web','AppTerpel','PaymentOrchestrator','GoPass','FEprinter',
-  'LoyaltyOrchestrator','GoPassPayment','ControllerATG (Veeder Root)','LazoATG (Veeder Root)',
-  'Fidelizacion-Offline','Sincronizacion Recibos','Conciliador Medios Pago','Orquestador Sincronizacion'
-];
-
-var ALL_SERVICES = [{group:'PM2', items:SERVICES_PM2},{group:'Windows Services', items:SERVICES_WIN}];
-
-var selectedCoreTypes = [];
-var data = [];
-var activeFilter = 'all';
-var expanded = {};
-var editingId = null;
-
-/* ---- Core types ---- */
-function buildCoreTypes() {
-  var el = document.getElementById('core-types-container');
-  el.innerHTML = CORE_TYPES.map(function(ct) {
-    var active = selectedCoreTypes.indexOf(ct) !== -1 ? ' active' : '';
-    return '<button class="core-btn'+active+'" data-ct="'+ct+'" onclick="toggleCoreType(this)">'+ct+'</button>';
-  }).join('');
-}
-
-function toggleCoreType(btn) {
-  var ct = btn.dataset.ct;
-  var idx = selectedCoreTypes.indexOf(ct);
-  if (idx === -1) { selectedCoreTypes.push(ct); btn.classList.add('active'); }
-  else { selectedCoreTypes.splice(idx,1); btn.classList.remove('active'); }
-}
-
-/* ---- Service grid ---- */
-function allSvcItems() {
-  var result = [];
-  ALL_SERVICES.forEach(function(g) { g.items.forEach(function(s) { result.push(s); }); });
-  return result;
-}
-
-function buildSvcGrid(preSelected) {
-  var el = document.getElementById('svc-grid');
-  var i = 0;
-  var html = '';
-  ALL_SERVICES.forEach(function(g) {
-    html += '<div class="svc-group-header" data-group="'+g.group+'">'+
-      '<span class="svc-group-label">'+g.group+'</span>'+
-      '<span class="svc-group-count" id="gcnt-'+g.group.replace(/\s/g,'-')+'"></span>'+
-      '</div>';
-    html += '<div class="svc-group-grid" id="gg-'+g.group.replace(/\s/g,'-')+'">';
-    g.items.forEach(function(s) {
-      var checked = preSelected && preSelected.indexOf(s) !== -1;
-      var pm2class = g.group === 'PM2' ? ' pm2' : '';
-      html += '<label class="svc-cb'+pm2class+(checked?' checked':'')+'" id="slbl-'+i+'" for="svc-'+i+'">' +
-        '<input type="checkbox" id="svc-'+i+'" data-svc="'+s+'" onchange="svcChange('+i+',\''+g.group+'\')"'+(checked?' checked':'')+'/>' +
-        '<span>'+s+'</span></label>';
-      i++;
-    });
-    html += '</div>';
-  });
-  el.innerHTML = html;
-  updateGroupCounts();
-}
-
-function svcChange(i, group) {
-  var cb = document.getElementById('svc-'+i);
-  var lbl = document.getElementById('slbl-'+i);
-  if (cb.checked) lbl.classList.add('checked'); else lbl.classList.remove('checked');
-  updateGroupCounts();
-}
-
-function updateGroupCounts() {
-  var i = 0;
-  ALL_SERVICES.forEach(function(g) {
-    var checked = 0;
-    g.items.forEach(function(s) {
-      var cb = document.getElementById('svc-'+i);
-      if (cb && cb.checked) checked++;
-      i++;
-    });
-    var cntEl = document.getElementById('gcnt-'+g.group.replace(/\s/g,'-'));
-    if (cntEl) cntEl.textContent = checked ? checked+'/'+g.items.length+' seleccionados' : '';
-  });
-}
-
-function filterSvcGrid() {
-  var q = (document.getElementById('svc-search').value || '').toLowerCase();
-  var i = 0;
-  ALL_SERVICES.forEach(function(g) {
-    var anyVisible = false;
-    g.items.forEach(function(s) {
-      var lbl = document.getElementById('slbl-'+i);
-      var vis = !q || s.toLowerCase().indexOf(q) !== -1;
-      if (lbl) lbl.style.display = vis ? '' : 'none';
-      if (vis) anyVisible = true;
-      i++;
-    });
-    var hdr = document.querySelector('.svc-group-header[data-group="'+g.group+'"]');
-    var grid = document.getElementById('gg-'+g.group.replace(/\s/g,'-'));
-    if (hdr) hdr.style.display = anyVisible ? '' : 'none';
-    if (grid) grid.style.display = anyVisible ? '' : 'none';
-  });
-}
-
-function toggleAllSvcs(val) {
-  var i = 0;
-  ALL_SERVICES.forEach(function(g) {
-    g.items.forEach(function(s) {
-      var cb = document.getElementById('svc-'+i);
-      var lbl = document.getElementById('slbl-'+i);
-      if (cb) { cb.checked = val; if (val) lbl.classList.add('checked'); else lbl.classList.remove('checked'); }
-      i++;
-    });
-  });
-  updateGroupCounts();
-}
-
-function getSelectedSvcs() {
-  var result = [];
-  var i = 0;
-  ALL_SERVICES.forEach(function(g) {
-    g.items.forEach(function(s) {
-      var cb = document.getElementById('svc-'+i);
-      if (cb && cb.checked) result.push(s);
-      i++;
-    });
-  });
-  return result;
-}
-
-/* ---- Data ---- */
-function load() {
-  try { var s = localStorage.getItem('terpelpos_v3'); if (s) data = JSON.parse(s); } catch(e){}
-  if (!data.length) {
-    data = [{
-      id: 1,
-      prev: '20.0.5', next: '21.3.1', date: '2025-09-30',
-      responsable: 'Jhonatan Ramírez', estado: 'completado',
-      coreTypes: ['core-Gilbarco'],
-      svcs: ['Lazo MQTT','Sincronizacion Recibos','JavaControl','lazoexpressee'],
-      core: 'UPDATE public.wacher_parametros SET codigo=\'LAZO-MQTT\'\n(depurador 4.1)-FNC_notificaciones_pos_venta_combustible',
-      registry: 'fnc_procesar_insertar_productos_registry',
-      scriptsAdd: 'upgrade-core.sql, upgrade-registry.sql',
-      scriptsUpd: 'schema_lazoexpresscore.sql, parametros.sql, lazoexpress_core_49.sql, lazoexpress_core_50.sql',
-      adicionales: 'MENU_RAPIDO1.3.3.bat',
-      scriptAp: 'update20.0.5.sql, update20.0.5registry.sql',
-      bat: 'Actualizacion20.0.5.bat',
-      notas: 'Actualiza binarios POS, aplica cambios en bases de datos, sincroniza medios de pago y configura SSH en puerto 2025\n• Nuevo depurador 4.1 y actualización de procedimientos\n• Creación de índices para mejorar rendimiento\n• Nuevas tablas de reportería y depuración',
-      validaciones: {conexion:true,servicios:true,ventas:true,reportes:false}
-    }];
-    persist();
-  }
-}
-
-function persist() {
-  try { localStorage.setItem('terpelpos_v3', JSON.stringify(data)); } catch(e){}
-}
-
-function esc(s) {
-  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
-
-/* ---- Modal ---- */
-function openModal(id) {
-  editingId = id || null;
-  document.getElementById('modal-title').textContent = id ? 'Editar actualización' : 'Nueva actualización';
-  document.getElementById('svc-search').value = '';
-
-  if (id) {
-    var r = data.find(function(x){return x.id===id;});
-    if (r) {
-      selectedCoreTypes = (r.coreTypes||[]).slice();
-      buildCoreTypes();
-      buildSvcGrid(r.svcs||[]);
-      document.getElementById('f-prev').value = r.prev||'';
-      document.getElementById('f-new').value = r.next||'';
-      document.getElementById('f-date').value = r.date||'';
-      document.getElementById('f-resp').value = r.responsable||'';
-      document.getElementById('f-estado').value = r.estado||'completado';
-      document.getElementById('f-core').value = r.core||'';
-      document.getElementById('f-registry').value = r.registry||'';
-      document.getElementById('f-scripts-add').value = r.scriptsAdd||'';
-      document.getElementById('f-scripts-upd').value = r.scriptsUpd||'';
-      document.getElementById('f-adicionales').value = r.adicionales||'';
-      document.getElementById('f-script-ap').value = r.scriptAp||'';
-      document.getElementById('f-bat').value = r.bat||'';
-      document.getElementById('f-notas').value = r.notas||'';
-    }
+/* ════════════════════════════════════════
+   AUTH
+════════════════════════════════════════ */
+async function initAuth() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) {
+    setUser(session.user);
   } else {
-    selectedCoreTypes = [];
-    buildCoreTypes();
-    buildSvcGrid([]);
-    ['f-prev','f-new','f-date','f-resp','f-core','f-registry','f-scripts-add','f-scripts-upd','f-adicionales','f-script-ap','f-bat','f-notas'].forEach(function(fid){
-      document.getElementById(fid).value='';
-    });
-    document.getElementById('f-estado').value='completado';
-    document.getElementById('f-date').value=new Date().toISOString().split('T')[0];
+    showLogin();
   }
-  document.getElementById('modal-overlay').classList.add('open');
+  sb.auth.onAuthStateChange((_ev, sess) => {
+    if (sess) { setUser(sess.user); }
+    else      { showLogin(); }
+  });
 }
 
-function closeModal() {
-  document.getElementById('modal-overlay').classList.remove('open');
-  editingId = null;
+function setUser(user) {
+  currentUser = user;
+  document.getElementById('user-name-display').textContent  = user.user_metadata?.full_name || user.email;
+  document.getElementById('user-email-display').textContent = user.email;
+  const av = document.getElementById('user-avatar');
+  if (user.user_metadata?.avatar_url) {
+    av.innerHTML = `<img src="${user.user_metadata.avatar_url}" alt="" />`;
+  } else {
+    av.textContent = (user.email || '?')[0].toUpperCase();
+  }
+  showApp();
+  loadRecords();
 }
 
-function overlayClick(e) {
-  if (e.target===document.getElementById('modal-overlay')) closeModal();
+function showLogin() {
+  hide('app-loading');
+  show('login-page', 'flex');
+  hide('main-app');
 }
 
-function saveRecord() {
-  var next = document.getElementById('f-new').value.trim();
-  var prev = document.getElementById('f-prev').value.trim();
-  if (!next||!prev) { alert('Versión anterior y versión nueva son obligatorias.'); return; }
-  var rec = {
-    prev:prev, next:next,
-    date:document.getElementById('f-date').value,
-    responsable:document.getElementById('f-resp').value.trim(),
-    estado:document.getElementById('f-estado').value,
-    coreTypes:selectedCoreTypes.slice(),
-    svcs:getSelectedSvcs(),
-    core:document.getElementById('f-core').value.trim(),
-    registry:document.getElementById('f-registry').value.trim(),
-    scriptsAdd:document.getElementById('f-scripts-add').value.trim(),
-    scriptsUpd:document.getElementById('f-scripts-upd').value.trim(),
-    adicionales:document.getElementById('f-adicionales').value.trim(),
-    scriptAp:document.getElementById('f-script-ap').value.trim(),
-    bat:document.getElementById('f-bat').value.trim(),
-    notas:document.getElementById('f-notas').value.trim()
-  };
+function showApp() {
+  hide('app-loading');
+  hide('login-page');
+  show('main-app', 'block');
+}
+
+document.getElementById('btn-google-login').addEventListener('click', async () => {
+  const { error } = await sb.auth.signInWithOAuth({
+    provider: 'google',
+    options: { redirectTo: location.href }
+  });
+  if (error) toast('Error al iniciar sesión: ' + error.message, 'error');
+});
+
+document.getElementById('btn-logout').addEventListener('click', async () => {
+  await sb.auth.signOut();
+  currentUser = null;
+  allRecords = [];
+  showLogin();
+});
+
+/* ════════════════════════════════════════
+   DATA
+════════════════════════════════════════ */
+async function loadRecords() {
+  setTableLoading();
+  const { data, error } = await sb
+    .from('actualizaciones')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) { toast('Error al cargar: ' + error.message, 'error'); return; }
+  allRecords = data || [];
+  renderAll();
+}
+
+async function saveRecord(payload) {
   if (editingId) {
-    var r = data.find(function(x){return x.id===editingId;});
-    if (r) Object.assign(r, rec);
+    payload.updated_at = new Date().toISOString();
+    const { error } = await sb.from('actualizaciones').update(payload).eq('id', editingId);
+    if (error) throw error;
+    toast('Actualización guardada ✓');
   } else {
-    rec.id = Date.now();
-    rec.validaciones = {conexion:false,servicios:false,ventas:false,reportes:false};
-    data.unshift(rec);
+    payload.usuario_email  = currentUser.email;
+    payload.usuario_nombre = currentUser.user_metadata?.full_name || currentUser.email;
+    payload.created_at     = new Date().toISOString();
+    const { error } = await sb.from('actualizaciones').insert([payload]);
+    if (error) throw error;
+    toast('Actualización creada ✓');
   }
-  persist(); closeModal(); render();
+  closeFormModal();
+  loadRecords();
 }
 
-function toggleVal(id, key) {
-  var r = data.find(function(x){return x.id===id;});
-  if (!r) return;
-  r.validaciones[key]=!r.validaciones[key];
-  persist(); render();
+async function deleteRecord(id) {
+  const { error } = await sb.from('actualizaciones').delete().eq('id', id);
+  if (error) { toast('Error al eliminar: ' + error.message, 'error'); return; }
+  toast('Registro eliminado', 'info');
+  loadRecords();
 }
 
-function deleteRecord(id) {
-  if (!confirm('¿Eliminar este registro?')) return;
-  data=data.filter(function(x){return x.id!==id;});
-  delete expanded[id]; persist(); render();
+/* ════════════════════════════════════════
+   RENDER
+════════════════════════════════════════ */
+function filteredRecords() {
+  let recs = [...allRecords];
+  if (activeFilter !== 'todas') {
+    recs = recs.filter(r => r.estado === activeFilter);
+  }
+  if (searchTerm.trim()) {
+    const q = searchTerm.toLowerCase();
+    recs = recs.filter(r =>
+      [r.version_nueva, r.version_anterior, r.responsable, r.notas, r.core, r.registry,
+       JSON.stringify(r.servicios)].some(v => v && String(v).toLowerCase().includes(q))
+    );
+  }
+  return recs;
 }
 
-function toggleExpand(id) {
-  expanded[id]=!expanded[id]; render();
+function renderAll() {
+  renderStats();
+  renderTable();
 }
 
-function setFilter(val,el) {
-  activeFilter=val;
-  document.querySelectorAll('.pill').forEach(function(b){b.classList.remove('active');});
-  el.classList.add('active'); render();
+function renderStats() {
+  const all = allRecords;
+  document.getElementById('stat-total').textContent     = all.length;
+  document.getElementById('stat-completada').textContent= all.filter(r => r.estado === 'Completada').length;
+  document.getElementById('stat-progreso').textContent  = all.filter(r => r.estado === 'En progreso').length;
+  document.getElementById('stat-pendiente').textContent = all.filter(r => r.estado === 'Pendiente').length;
+  document.getElementById('stat-validado').textContent  = all.filter(r => r.estado === 'Validado').length;
 }
 
-var estadoLabel={completado:'Completado','en-progreso':'En progreso',pendiente:'Pendiente',validado:'Validado'};
-var valKeys={conexion:'Conexión POS–BD',servicios:'Servicios levantados',ventas:'Prueba de ventas',reportes:'Validación reportes'};
+function renderTable() {
+  const tbody = document.getElementById('table-body');
+  const recs  = filteredRecords();
+  document.getElementById('records-count').textContent =
+    `${recs.length} registro${recs.length !== 1 ? 's' : ''}`;
 
-function render() {
-  var q=(document.getElementById('search').value||'').toLowerCase();
-  var list=data;
-  if (activeFilter!=='all') list=list.filter(function(r){return r.estado===activeFilter;});
-  if (q) list=list.filter(function(r){
-    return (r.prev+r.next+r.responsable+r.notas+r.core+r.registry+(r.svcs||[]).join(' ')+(r.coreTypes||[]).join(' ')).toLowerCase().indexOf(q)!==-1;
-  });
+  if (recs.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="9"><div class="empty-state">
+      <div class="empty-icon">📋</div>
+      <div class="empty-title">Sin registros</div>
+      <div class="empty-sub">No se encontraron actualizaciones con los filtros aplicados.</div>
+    </div></td></tr>`;
+    return;
+  }
 
-  var total=data.length;
-  var completados=data.filter(function(r){return r.estado==='completado'||r.estado==='validado';}).length;
-  var enProgreso=data.filter(function(r){return r.estado==='en-progreso';}).length;
-  var pendientes=data.filter(function(r){return r.estado==='pendiente';}).length;
-  document.getElementById('stats').innerHTML=
-    '<div class="stat"><div class="stat-label">Total</div><div class="stat-val">'+total+'</div></div>'+
-    '<div class="stat"><div class="stat-label">Completados</div><div class="stat-val green">'+completados+'</div></div>'+
-    '<div class="stat"><div class="stat-label">En progreso</div><div class="stat-val amber">'+enProgreso+'</div></div>'+
-    '<div class="stat"><div class="stat-label">Pendientes</div><div class="stat-val red">'+pendientes+'</div></div>';
+  tbody.innerHTML = recs.map(r => {
+    const estado    = r.estado || 'Pendiente';
+    const slug      = slugEstado(estado);
+    const servicios = safeArr(r.servicios);
+    const vals      = safeArr(r.validaciones);
+    const totalVals = VALIDACIONES_LIST.length;
+    const doneVals  = vals.length;
+    const coreTypes = safeArr(r.core_types);
 
-  var container=document.getElementById('cards');
-  if (!list.length){container.innerHTML='<div class="empty">No hay registros para esta búsqueda.</div>';return;}
-
-  container.innerHTML=list.map(function(r){
-    var open=expanded[r.id];
-    var valCount=Object.values(r.validaciones).filter(Boolean).length;
-    var svcs=r.svcs||[];
-    var coreTypes=r.coreTypes||[];
-    var bodyHtml='';
-    if (open) {
-      var coreChips=coreTypes.map(function(ct){return '<span class="svc-chip core-chip">'+esc(ct)+'</span>';}).join('');
-      var svcChips=svcs.map(function(s){return '<span class="svc-chip">'+esc(s)+'</span>';}).join('');
-      var valHtml=Object.entries(valKeys).map(function(kv){
-        var done=r.validaciones[kv[0]];
-        return '<div class="val-item'+(done?' done':'')+'" onclick="toggleVal('+r.id+',\''+kv[0]+'\')"><div class="check-circle"></div>'+kv[1]+'</div>';
-      }).join('');
-      var svcsSection='';
-      if (coreTypes.length||svcs.length) {
-        var pm2svcs=svcs.filter(function(s){return SERVICES_PM2.indexOf(s)!==-1;});
-        var winsvcs=svcs.filter(function(s){return SERVICES_WIN.indexOf(s)!==-1;});
-        svcsSection='<div class="sec-label">Servicios compilados</div>'+
-          (coreTypes.length?'<div style="margin-bottom:8px"><div style="font-size:11px;color:var(--text3);margin-bottom:4px">Core</div><div class="svc-chips">'+coreChips+'</div></div>':'')+
-          (pm2svcs.length?'<div style="margin-bottom:8px"><div style="font-size:11px;color:var(--text3);margin-bottom:4px">PM2 ('+pm2svcs.length+')</div><div class="svc-chips">'+pm2svcs.map(function(s){return '<span class="svc-chip pm2-chip">'+esc(s)+'</span>';}).join('')+'</div></div>':'')+
-          (winsvcs.length?'<div><div style="font-size:11px;color:var(--text3);margin-bottom:4px">Windows Services ('+winsvcs.length+')</div><div class="svc-chips">'+winsvcs.map(function(s){return '<span class="svc-chip">'+esc(s)+'</span>';}).join('')+'</div></div>':'');
-      }
-      bodyHtml='<div class="card-body open">'+svcsSection+
-        (r.core?'<div class="sec-label">BD — Core</div><div class="pre-box">'+esc(r.core)+'</div>':'')+
-        (r.registry?'<div class="sec-label">BD — Registry</div><div class="pre-box">'+esc(r.registry)+'</div>':'')+
-        '<div class="sec-label">Scripts y archivos</div><div class="info-grid">'+
-        '<div class="info-box"><div class="lbl">Scripts agregados</div><div class="val mono">'+(esc(r.scriptsAdd)||'—')+'</div></div>'+
-        '<div class="info-box"><div class="lbl">Scripts actualizados</div><div class="val mono">'+(esc(r.scriptsUpd)||'—')+'</div></div>'+
-        '<div class="info-box"><div class="lbl">Script aplicado</div><div class="val mono">'+(esc(r.scriptAp)||'—')+'</div></div>'+
-        '<div class="info-box"><div class="lbl">Bat ejecutado</div><div class="val mono">'+(esc(r.bat)||'—')+'</div></div>'+
-        (r.adicionales?'<div class="info-box" style="grid-column:1/-1"><div class="lbl">Archivos / carpetas adicionales</div><div class="val mono">'+esc(r.adicionales)+'</div></div>':'')+
-        '</div>'+
-        (r.notas?'<div class="sec-label">Notas especiales</div><div class="pre-box">'+esc(r.notas)+'</div>':'')+
-        '<div class="sec-label">Validaciones posteriores</div><div class="val-checks">'+valHtml+'</div>'+
-        '<div class="card-footer">'+
-        '<button class="btn btn-sm" onclick="openModal('+r.id+')">Editar</button>'+
-        '<button class="btn btn-sm" style="color:#A32D2D;border-color:transparent" onclick="deleteRecord('+r.id+')">Eliminar</button>'+
-        '</div></div>';
-    }
-    var pm2count=svcs.filter(function(s){return SERVICES_PM2.indexOf(s)!==-1;}).length;
-    var wincount=svcs.filter(function(s){return SERVICES_WIN.indexOf(s)!==-1;}).length;
-    var svcSummary='';
-    if (pm2count) svcSummary+=' &nbsp;·&nbsp; PM2: '+pm2count;
-    if (wincount) svcSummary+=' &nbsp;·&nbsp; Win: '+wincount;    return '<div class="card">'+
-      '<div class="card-head" onclick="toggleExpand('+r.id+')">'+
-      '<div class="card-left">'+
-      '<span class="ver-badge">v'+esc(r.prev)+'</span>'+
-      '<span class="ver-arrow">&#x2192; v'+esc(r.next)+'</span>'+
-      '<div class="card-info">'+
-      '<div class="card-title">'+(esc(r.responsable)||'Sin responsable')+'</div>'+
-      '<div class="card-sub">'+(r.date||'Sin fecha')+svcSummary+' &nbsp;·&nbsp; '+valCount+'/4 validaciones</div>'+
-      '</div></div>'+
-      '<div class="card-right"><span class="tag tag-'+r.estado+'">'+estadoLabel[r.estado]+'</span><span class="chevron">'+(open?'&#x25B2;':'&#x25BC;')+'</span></div>'+
-      '</div>'+bodyHtml+'</div>';
+    return `<tr>
+      <td>
+        <span class="version-chip">${esc(r.version_anterior||'–')}</span>
+        <span class="arrow-icon">→</span>
+        <span class="version-chip" style="color:var(--c-green)">${esc(r.version_nueva||'–')}</span>
+      </td>
+      <td class="date-cell">${fmtDate(r.fecha)}</td>
+      <td class="responsible">${esc(r.responsable||'–')}</td>
+      <td><span class="badge ${slug}"><span class="badge-dot ${slug}"></span>${esc(estado)}</span></td>
+      <td>
+        ${coreTypes.length ? `<span class="badge en-progreso">${coreTypes.length} core${coreTypes.length!==1?'s':''}</span>` : '<span style="color:var(--c-muted);font-size:.8rem">—</span>'}
+      </td>
+      <td>
+        ${servicios.length ? `<span class="badge completada">${servicios.length} servicio${servicios.length!==1?'s':''}</span>` : '<span style="color:var(--c-muted);font-size:.8rem">—</span>'}
+      </td>
+      <td>
+        <span class="badge ${doneVals === totalVals ? 'validado' : doneVals > 0 ? 'en-progreso' : 'pendiente'}">
+          ${doneVals}/${totalVals}
+        </span>
+      </td>
+      <td class="date-cell" title="${esc(r.usuario_email||'')}">
+        ${esc(r.usuario_nombre||r.usuario_email||'–')}<br>
+        <span style="font-size:.72rem">${fmtDate(r.created_at)}</span>
+      </td>
+      <td>
+        <div class="row-actions">
+          <button class="btn-icon view"   onclick="openDetail('${r.id}')"  title="Ver detalle">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+          <button class="btn-icon edit"   onclick="openEdit('${r.id}')"    title="Editar">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+          <button class="btn-icon delete" onclick="confirmDelete('${r.id}')" title="Eliminar">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+          </button>
+        </div>
+      </td>
+    </tr>`;
   }).join('');
 }
 
-load(); render();
+function setTableLoading() {
+  document.getElementById('table-body').innerHTML =
+    `<tr><td colspan="9"><div class="empty-state"><div class="spinner" style="margin:0 auto"></div></div></td></tr>`;
+}
+
+/* ════════════════════════════════════════
+   FILTERS / SEARCH
+════════════════════════════════════════ */
+document.getElementById('filter-tabs').addEventListener('click', e => {
+  const tab = e.target.closest('.filter-tab');
+  if (!tab) return;
+  document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+  tab.classList.add('active');
+  activeFilter = tab.dataset.filter;
+  renderTable();
+});
+
+document.getElementById('search-input').addEventListener('input', e => {
+  searchTerm = e.target.value;
+  renderTable();
+});
+
+/* ════════════════════════════════════════
+   FORM MODAL
+════════════════════════════════════════ */
+function buildCheckGrid(containerId, items, namespace) {
+  const grid = document.getElementById(containerId);
+  grid.innerHTML = items.map(item => `
+    <label class="check-item" id="ci-${namespace}-${slugId(item)}">
+      <input type="checkbox" data-ns="${namespace}" value="${esc(item)}" onchange="toggleCheckItem(this)" />
+      ${esc(item)}
+    </label>`).join('');
+}
+
+function buildValGrid() {
+  const grid = document.getElementById('validaciones-grid');
+  grid.innerHTML = VALIDACIONES_LIST.map(item => `
+    <label class="val-item" id="vi-${slugId(item)}">
+      <input type="checkbox" data-ns="validaciones" value="${esc(item)}" onchange="toggleValItem(this)" />
+      ${esc(item)}
+    </label>`).join('');
+}
+
+function toggleCheckItem(cb) {
+  cb.closest('.check-item').classList.toggle('checked', cb.checked);
+}
+function toggleValItem(cb) {
+  cb.closest('.val-item').classList.toggle('ok', cb.checked);
+}
+
+function getChecked(ns) {
+  return [...document.querySelectorAll(`input[data-ns="${ns}"]:checked`)].map(i => i.value);
+}
+function setChecked(ns, values) {
+  document.querySelectorAll(`input[data-ns="${ns}"]`).forEach(cb => {
+    cb.checked = values.includes(cb.value);
+    toggleCheckItem(cb);
+  });
+}
+function setValChecked(values) {
+  document.querySelectorAll('input[data-ns="validaciones"]').forEach(cb => {
+    cb.checked = values.includes(cb.value);
+    toggleValItem(cb);
+  });
+}
+
+function openCreate() {
+  editingId = null;
+  document.getElementById('modal-title').textContent = 'Nueva actualización';
+  document.getElementById('save-label').textContent  = 'Guardar actualización';
+  resetForm();
+  document.getElementById('f-fecha').value = new Date().toISOString().split('T')[0];
+  openModal('form-modal');
+}
+
+function openEdit(id) {
+  const rec = allRecords.find(r => r.id == id);
+  if (!rec) return;
+  editingId = id;
+  document.getElementById('modal-title').textContent = 'Editar actualización';
+  document.getElementById('save-label').textContent  = 'Guardar cambios';
+  resetForm();
+  document.getElementById('f-version_anterior').value = rec.version_anterior || '';
+  document.getElementById('f-version_nueva').value    = rec.version_nueva    || '';
+  document.getElementById('f-fecha').value            = rec.fecha            || '';
+  document.getElementById('f-responsable').value      = rec.responsable      || '';
+  document.getElementById('f-estado').value           = rec.estado           || 'Pendiente';
+  document.getElementById('f-scripts_add').value      = rec.scripts_add      || '';
+  document.getElementById('f-scripts_upd').value      = rec.scripts_upd      || '';
+  document.getElementById('f-script_ap').value        = rec.script_ap        || '';
+  document.getElementById('f-bat').value              = rec.bat              || '';
+  document.getElementById('f-adicionales').value      = rec.adicionales      || '';
+  document.getElementById('f-notas').value            = rec.notas            || '';
+  setChecked('core_types',  safeArr(rec.core_types));
+  setChecked('servicios',   safeArr(rec.servicios));
+  setValChecked(safeArr(rec.validaciones));
+  openModal('form-modal');
+}
+
+function resetForm() {
+  ['f-version_anterior','f-version_nueva','f-fecha','f-responsable',
+   'f-scripts_add','f-scripts_upd','f-script_ap','f-bat','f-adicionales','f-notas'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('f-estado').value = 'Pendiente';
+  document.querySelectorAll('.check-item input[type="checkbox"]').forEach(cb => { cb.checked = false; cb.closest('.check-item').classList.remove('checked'); });
+  document.querySelectorAll('.val-item input[type="checkbox"]').forEach(cb => { cb.checked = false; cb.closest('.val-item').classList.remove('ok'); });
+}
+
+document.getElementById('btn-open-create').addEventListener('click', openCreate);
+document.getElementById('modal-close').addEventListener('click', closeFormModal);
+document.getElementById('modal-cancel').addEventListener('click', closeFormModal);
+
+document.getElementById('modal-save').addEventListener('click', async () => {
+  const payload = {
+    version_anterior: document.getElementById('f-version_anterior').value.trim(),
+    version_nueva:    document.getElementById('f-version_nueva').value.trim(),
+    fecha:            document.getElementById('f-fecha').value || null,
+    responsable:      document.getElementById('f-responsable').value.trim(),
+    estado:           document.getElementById('f-estado').value,
+    core_types:       getChecked('core_types'),
+    servicios:        getChecked('servicios'),
+    validaciones:     getChecked('validaciones'),
+    scripts_add:      document.getElementById('f-scripts_add').value.trim(),
+    scripts_upd:      document.getElementById('f-scripts_upd').value.trim(),
+    script_ap:        document.getElementById('f-script_ap').value.trim(),
+    bat:              document.getElementById('f-bat').value.trim(),
+    adicionales:      document.getElementById('f-adicionales').value.trim(),
+    notas:            document.getElementById('f-notas').value.trim(),
+  };
+  if (!payload.version_nueva) { toast('La versión nueva es requerida', 'error'); return; }
+  const btn = document.getElementById('modal-save');
+  btn.disabled = true;
+  btn.textContent = 'Guardando…';
+  try {
+    await saveRecord(payload);
+  } catch (e) {
+    toast('Error: ' + e.message, 'error');
+  } finally {
+    btn.disabled = false;
+    document.getElementById('save-label').textContent = editingId ? 'Guardar cambios' : 'Guardar actualización';
+  }
+});
+
+function closeFormModal() { closeModal('form-modal'); editingId = null; }
+
+/* ════════════════════════════════════════
+   DETAIL MODAL
+════════════════════════════════════════ */
+function openDetail(id) {
+  const r = allRecords.find(x => x.id == id);
+  if (!r) return;
+  document.getElementById('detail-title').textContent = `${r.version_anterior||'–'} → ${r.version_nueva||'–'}`;
+  const vals = safeArr(r.validaciones);
+  const body = document.getElementById('detail-body');
+  body.innerHTML = `
+    <div class="detail-section">
+      <div class="detail-row">
+        <span class="detail-label">Versión</span>
+        <span class="detail-value">
+          <span class="version-chip">${esc(r.version_anterior||'–')}</span>
+          → <span class="version-chip" style="color:var(--c-green)">${esc(r.version_nueva||'–')}</span>
+        </span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Fecha</span>
+        <span class="detail-value">${fmtDate(r.fecha)}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Responsable</span>
+        <span class="detail-value">${esc(r.responsable||'–')}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Estado</span>
+        <span class="detail-value"><span class="badge ${slugEstado(r.estado)}"><span class="badge-dot ${slugEstado(r.estado)}"></span>${esc(r.estado||'–')}</span></span>
+      </div>
+      ${safeArr(r.core_types).length ? `
+      <div class="detail-row">
+        <span class="detail-label">Core Types</span>
+        <span class="detail-value tag-list">${safeArr(r.core_types).map(v => `<span class="tag">${esc(v)}</span>`).join('')}</span>
+      </div>` : ''}
+      ${safeArr(r.servicios).length ? `
+      <div class="detail-row">
+        <span class="detail-label">Servicios</span>
+        <span class="detail-value tag-list">${safeArr(r.servicios).map(v => `<span class="tag">${esc(v)}</span>`).join('')}</span>
+      </div>` : ''}
+      <div class="detail-row">
+        <span class="detail-label">Validaciones</span>
+        <span class="detail-value">
+          <div class="val-grid" style="pointer-events:none">
+            ${VALIDACIONES_LIST.map(v => `
+              <label class="val-item ${vals.includes(v)?'ok':''}">
+                <input type="checkbox" ${vals.includes(v)?'checked':''} disabled /> ${esc(v)}
+              </label>`).join('')}
+          </div>
+        </span>
+      </div>
+      ${r.scripts_add ? `<div class="detail-row"><span class="detail-label">Scripts ADD</span><span class="detail-value" style="font-family:var(--mono);font-size:.82rem;white-space:pre-wrap">${esc(r.scripts_add)}</span></div>` : ''}
+      ${r.scripts_upd ? `<div class="detail-row"><span class="detail-label">Scripts UPD</span><span class="detail-value" style="font-family:var(--mono);font-size:.82rem;white-space:pre-wrap">${esc(r.scripts_upd)}</span></div>` : ''}
+      ${r.script_ap   ? `<div class="detail-row"><span class="detail-label">Script AP</span><span class="detail-value" style="font-family:var(--mono);font-size:.82rem;white-space:pre-wrap">${esc(r.script_ap)}</span></div>` : ''}
+      ${r.bat         ? `<div class="detail-row"><span class="detail-label">BAT</span><span class="detail-value" style="font-family:var(--mono);font-size:.82rem;white-space:pre-wrap">${esc(r.bat)}</span></div>` : ''}
+      ${r.adicionales ? `<div class="detail-row"><span class="detail-label">Adicionales</span><span class="detail-value">${esc(r.adicionales)}</span></div>` : ''}
+      ${r.notas       ? `<div class="detail-row"><span class="detail-label">Notas</span><span class="detail-value">${esc(r.notas)}</span></div>` : ''}
+      <div class="detail-row" style="border-top:1px solid var(--c-border);padding-top:.75rem;margin-top:.25rem">
+        <span class="detail-label">Creado por</span>
+        <span class="detail-value">${esc(r.usuario_nombre||r.usuario_email||'–')} — ${fmtDate(r.created_at)}</span>
+      </div>
+      ${r.updated_at ? `<div class="detail-row"><span class="detail-label">Modificado</span><span class="detail-value">${fmtDate(r.updated_at)}</span></div>` : ''}
+    </div>`;
+  openModal('detail-modal');
+}
+document.getElementById('detail-close').addEventListener('click', () => closeModal('detail-modal'));
+document.getElementById('detail-close-btn').addEventListener('click', () => closeModal('detail-modal'));
+
+/* ════════════════════════════════════════
+   CONFIRM DELETE
+════════════════════════════════════════ */
+function confirmDelete(id) {
+  deleteTarget = id;
+  openModal('confirm-overlay');
+}
+document.getElementById('confirm-cancel').addEventListener('click', () => { deleteTarget = null; closeModal('confirm-overlay'); });
+document.getElementById('confirm-delete').addEventListener('click', async () => {
+  if (!deleteTarget) return;
+  closeModal('confirm-overlay');
+  await deleteRecord(deleteTarget);
+  deleteTarget = null;
+});
+
+/* ════════════════════════════════════════
+   MODAL HELPERS
+════════════════════════════════════════ */
+function openModal(id) {
+  const el = document.getElementById(id);
+  el.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+  document.body.style.overflow = '';
+}
+// Close on overlay click
+['form-modal','detail-modal','confirm-overlay'].forEach(id => {
+  document.getElementById(id).addEventListener('click', e => {
+    if (e.target.id === id) closeModal(id);
+  });
+});
+
+/* ════════════════════════════════════════
+   MISC UTILS
+════════════════════════════════════════ */
+function show(id, display = 'flex') {
+  const el = document.getElementById(id);
+  if (el) el.style.display = display;
+}
+function hide(id) {
+  const el = document.getElementById(id);
+  if (el) el.style.display = 'none';
+}
+function esc(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function slugId(s) {
+  return s.toLowerCase().replace(/[^a-z0-9]/g,'-');
+}
+
+/* ════════════════════════════════════════
+   INIT
+════════════════════════════════════════ */
+function init() {
+  // Build checkbox grids (once)
+  buildCheckGrid('core-types-grid', CORE_TYPES, 'core_types');
+  buildCheckGrid('servicios-pm2-grid', SERVICIOS_PM2, 'servicios');
+  buildCheckGrid('servicios-win-grid', SERVICIOS_WIN, 'servicios');
+  buildValGrid();
+  // Start auth
+  initAuth();
+}
+
+init();
 </script>
 </body>
 </html>
