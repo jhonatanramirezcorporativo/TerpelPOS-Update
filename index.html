@@ -834,7 +834,7 @@
    Reemplaza SUPABASE_PUBLISHABLE_KEY con tu clave anon/public real
 ════════════════════════════════════════ */
 const SUPABASE_URL = 'https://zlcqffnhccsqqjcvjijn.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpsY3FmZm5oY2NzcXFqY3ZqaWpuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNzMzMDAsImV4cCI6MjA5Njg0OTMwMH0.xWw1lOInND8tP8Dej9iQMGDpXqzn5XHBLodzVUZz8W0'; // <-- reemplaza aquí
+const SUPABASE_KEY = 'REEMPLAZAR_POR_MI_CLAVE'; // <-- reemplaza aquí
 
 const { createClient } = supabase;
 const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -979,16 +979,27 @@ async function loadRecords() {
 
 async function saveRecord(payload) {
   if (editingId) {
-    payload.updated_at = new Date().toISOString();
-    const { error } = await sb.from('actualizaciones').update(payload).eq('id', editingId);
-    if (error) throw error;
-    toast('Actualización guardada ✓');
+    // En UPDATE no pisamos usuario_email ni created_at originales
+    const updatePayload = { ...payload, updated_at: new Date().toISOString() };
+    delete updatePayload.usuario_email;
+    delete updatePayload.usuario_nombre;
+    delete updatePayload.created_at;
+
+    const { data, error } = await sb
+      .from('actualizaciones')
+      .update(updatePayload)
+      .eq('id', editingId)
+      .select();
+
+    if (error) throw new Error(error.message || JSON.stringify(error));
+    if (!data || data.length === 0) throw new Error('No se encontró el registro o sin permiso para editar.');
+    toast('Cambios guardados ✓');
   } else {
     payload.usuario_email  = currentUser.email;
     payload.usuario_nombre = currentUser.user_metadata?.full_name || currentUser.email;
     payload.created_at     = new Date().toISOString();
     const { error } = await sb.from('actualizaciones').insert([payload]);
-    if (error) throw error;
+    if (error) throw new Error(error.message || JSON.stringify(error));
     toast('Actualización creada ✓');
   }
   closeFormModal();
@@ -1230,16 +1241,19 @@ document.getElementById('modal-save').addEventListener('click', async () => {
     notas:            document.getElementById('f-notas').value.trim(),
   };
   if (!payload.version_nueva) { toast('La versión nueva es requerida', 'error'); return; }
+
+  // Capturar si estamos editando ANTES de cualquier await (closeFormModal lo pone null)
+  const wasEditing = !!editingId;
   const btn = document.getElementById('modal-save');
+  const label = document.getElementById('save-label');
   btn.disabled = true;
-  btn.textContent = 'Guardando…';
+  label.textContent = 'Guardando…';
   try {
     await saveRecord(payload);
   } catch (e) {
     toast('Error: ' + e.message, 'error');
-  } finally {
     btn.disabled = false;
-    document.getElementById('save-label').textContent = editingId ? 'Guardar cambios' : 'Guardar actualización';
+    label.textContent = wasEditing ? 'Guardar cambios' : 'Guardar actualización';
   }
 });
 
