@@ -834,7 +834,8 @@
    Reemplaza SUPABASE_PUBLISHABLE_KEY con tu clave anon/public real
 ════════════════════════════════════════ */
 const SUPABASE_URL = 'https://zlcqffnhccsqqjcvjijn.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpsY3FmZm5oY2NzcXFqY3ZqaWpuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNzMzMDAsImV4cCI6MjA5Njg0OTMwMH0.xWw1lOInND8tP8Dej9iQMGDpXqzn5XHBLodzVUZz8W0'; 
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpsY3FmZm5oY2NzcXFqY3ZqaWpuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNzMzMDAsImV4cCI6MjA5Njg0OTMwMH0.xWw1lOInND8tP8Dej9iQMGDpXqzn5XHBLodzVUZz8W0'; // <-- reemplaza aquí
+
 const { createClient } = supabase;
 const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -886,7 +887,19 @@ let searchTerm  = '';
 function fmtDate(d) {
   if (!d) return '—';
   const dt = new Date(d);
-  return dt.toLocaleDateString('es-CO', { year:'numeric', month:'short', day:'numeric' });
+  // Si tiene hora (timestamp), mostrar fecha y hora en zona Colombia
+  if (d.includes('T') || d.includes(' ')) {
+    return dt.toLocaleString('es-CO', {
+      year: 'numeric', month: 'short', day: 'numeric',
+      hour: '2-digit', minute: '2-digit',
+      timeZone: 'America/Bogota'
+    });
+  }
+  // Si es solo fecha (campo fecha), mostrar sin hora
+  return dt.toLocaleDateString('es-CO', {
+    year: 'numeric', month: 'short', day: 'numeric',
+    timeZone: 'America/Bogota'
+  });
 }
 function slugEstado(e) {
   return (e || '').toLowerCase().replace(' ', '-');
