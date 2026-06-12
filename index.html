@@ -1178,8 +1178,11 @@ function setValChecked(values) {
 
 function openCreate() {
   editingId = null;
+  const btn = document.getElementById('modal-save');
+  const label = document.getElementById('save-label');
+  btn.disabled = false;
+  label.textContent = 'Guardar actualización';
   document.getElementById('modal-title').textContent = 'Nueva actualización';
-  document.getElementById('save-label').textContent  = 'Guardar actualización';
   resetForm();
   document.getElementById('f-fecha').value = new Date().toISOString().split('T')[0];
   openModal('form-modal');
@@ -1189,8 +1192,11 @@ function openEdit(id) {
   const rec = allRecords.find(r => r.id == id);
   if (!rec) return;
   editingId = id;
+  const btn = document.getElementById('modal-save');
+  const label = document.getElementById('save-label');
+  btn.disabled = false;
+  label.textContent = 'Guardar cambios';
   document.getElementById('modal-title').textContent = 'Editar actualización';
-  document.getElementById('save-label').textContent  = 'Guardar cambios';
   resetForm();
   document.getElementById('f-version_anterior').value = rec.version_anterior || '';
   document.getElementById('f-version_nueva').value    = rec.version_nueva    || '';
