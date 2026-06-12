@@ -834,7 +834,7 @@
    Reemplaza SUPABASE_PUBLISHABLE_KEY con tu clave anon/public real
 ════════════════════════════════════════ */
 const SUPABASE_URL = 'https://zlcqffnhccsqqjcvjijn.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpsY3FmZm5oY2NzcXFqY3ZqaWpuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNzMzMDAsImV4cCI6MjA5Njg0OTMwMH0.xWw1lOInND8tP8Dej9iQMGDpXqzn5XHBLodzVUZz8W0'; // <-- reemplaza aquí
+const SUPABASE_KEY = 'REEMPLAZAR_POR_MI_CLAVE'; // <-- reemplaza aquí
 
 const { createClient } = supabase;
 const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -1252,6 +1252,7 @@ document.getElementById('modal-save').addEventListener('click', async () => {
     await saveRecord(payload);
   } catch (e) {
     toast('Error: ' + e.message, 'error');
+  } finally {
     btn.disabled = false;
     label.textContent = wasEditing ? 'Guardar cambios' : 'Guardar actualización';
   }
