@@ -886,18 +886,21 @@ let searchTerm  = '';
 ════════════════════════════════════════ */
 function fmtDate(d) {
   if (!d) return '—';
-
-  return new Date(d).toLocaleString('es-CO', {
-    timeZone: 'America/Bogota',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: true
+  const dt = new Date(d);
+  // Si tiene hora (timestamp), mostrar fecha y hora en zona Colombia
+  if (d.includes('T') || d.includes(' ')) {
+    return dt.toLocaleString('es-CO', {
+      year: 'numeric', month: 'short', day: 'numeric',
+      hour: '2-digit', minute: '2-digit',
+      timeZone: 'America/Bogota'
+    });
+  }
+  // Si es solo fecha (campo fecha), mostrar sin hora
+  return dt.toLocaleDateString('es-CO', {
+    year: 'numeric', month: 'short', day: 'numeric',
+    timeZone: 'America/Bogota'
   });
 }
-
 function slugEstado(e) {
   return (e || '').toLowerCase().replace(' ', '-');
 }
@@ -994,7 +997,6 @@ async function saveRecord(payload) {
     delete updatePayload.usuario_nombre;
     delete updatePayload.created_at;
 
-    
     const { data, error } = await sb
       .from('actualizaciones')
       .update(updatePayload)
@@ -1007,6 +1009,7 @@ async function saveRecord(payload) {
   } else {
     payload.usuario_email  = currentUser.email;
     payload.usuario_nombre = currentUser.user_metadata?.full_name || currentUser.email;
+    payload.created_at     = new Date().toISOString();
     const { error } = await sb.from('actualizaciones').insert([payload]);
     if (error) throw new Error(error.message || JSON.stringify(error));
     toast('Actualización creada ✓');
