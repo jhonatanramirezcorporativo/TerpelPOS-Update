@@ -243,7 +243,66 @@
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>  
 <script>
+  const supabase = window.supabase.createClient(
+    'https://zlcqffnhccsqqjcvjijn.supabase.co',
+    'sb_publishable_cmnaUYNGAEHiICE5yDFYRA_LtXfrC7i'
+);
+
+let currentUser = null;
+
+async function loginGoogle() {
+
+    await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+            redirectTo: window.location.href
+        }
+    });
+
+}
+
+async function logout() {
+    await supabase.auth.signOut();
+    location.reload();
+}
+
+async function checkSession() {
+
+    const { data } = await supabase.auth.getUser();
+
+    currentUser = data.user;
+
+    if (!currentUser) {
+
+        document.body.innerHTML = `
+            <div style="
+                display:flex;
+                justify-content:center;
+                align-items:center;
+                height:100vh;
+                flex-direction:column;
+                gap:20px;
+            ">
+                <h2>TerpelPOS Update</h2>
+
+                <button onclick="loginGoogle()"
+                    style="
+                    padding:12px 20px;
+                    cursor:pointer;
+                    ">
+                    Iniciar sesión con Google
+                </button>
+            </div>
+        `;
+
+        return false;
+    }
+
+    return true;
+}
+  
 var CORE_TYPES = ['core-Gilbarco','core-Wayne','core-Tokheim','core-Mepsan','Core-HongYang','Core-Multicore'];
 
 var SERVICES_PM2 = [
