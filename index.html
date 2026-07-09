@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
   <style>
     /* ─────────────────────────────────────────
        DESIGN TOKENS
@@ -1158,6 +1159,14 @@
       </div>
     </div>
 
+    <div class="toolbar" style="margin-bottom:1rem;">
+      <div class="search-wrap" style="max-width:420px;">
+        <input type="file" id="report-template-input" accept=".xlsx,.xls,.csv" style="width:100%; padding:.55rem .75rem; border:1px solid var(--c-border); border-radius:8px; background:var(--c-surface);" />
+      </div>
+      <button class="btn btn-secondary" id="report-template-clear" type="button">Limpiar plantilla</button>
+      <span class="page-sub" id="report-template-name">Sin plantilla cargada</span>
+    </div>
+
     <div class="stats-grid">
       <div class="stat-card total">
         <div class="stat-label">Programadas</div>
@@ -1175,6 +1184,18 @@
         <div class="stat-label">Pendientes</div>
         <div class="stat-value" id="report-pendientes">0</div>
       </div>
+      <div class="stat-card fix">
+        <div class="stat-label">Parciales</div>
+        <div class="stat-value" id="report-parciales">0</div>
+      </div>
+      <div class="stat-card completada">
+        <div class="stat-label">Franquiciadas</div>
+        <div class="stat-value" id="report-franquiciadas">0</div>
+      </div>
+      <div class="stat-card progreso">
+        <div class="stat-label">MASSER</div>
+        <div class="stat-value" id="report-masser">0</div>
+      </div>
     </div>
 
     <div class="table-wrap">
@@ -1183,16 +1204,19 @@
           <thead>
             <tr>
               <th>Codigo</th>
-              <th>EDS</th>
               <th>Regional</th>
+              <th>EDS</th>
+              <th>Negocio</th>
+              <th>Avance</th>
+              <th>Estado</th>
               <th>Programada</th>
-              <th>Estado cronograma</th>
-              <th>Version actual</th>
+              <th>Dia</th>
               <th>Agente</th>
+              <th>Observaciones</th>
             </tr>
           </thead>
           <tbody id="report-body">
-            <tr><td colspan="7"><div class="empty-state">Sin datos de cronograma.</div></td></tr>
+            <tr><td colspan="10"><div class="empty-state">Sin datos de cronograma.</div></td></tr>
           </tbody>
         </table>
       </div>
@@ -1397,6 +1421,7 @@
         <div><strong>Arrastra tu archivo aquí</strong></div>
         <div class="upload-drop-text">o haz clic para seleccionar</div>
       </div>
+      <div class="page-sub" id="compiled-file-name" style="margin-top:-.4rem;">Ningún archivo seleccionado</div>
       <input type="file" id="compiled-file-input" accept=".zip,.jar,.exe,.tar,.gz" />
 
       <!-- FILE INFO -->
@@ -1426,7 +1451,7 @@
     </div>
     <div class="modal-footer">
       <button class="btn btn-secondary" id="upload-modal-cancel">Cancelar</button>
-      <button class="btn btn-primary" id="upload-modal-save">Subir Compilado</button>
+      <button class="btn btn-primary" id="upload-modal-save" disabled>Subir Compilado</button>
     </div>
   </div>
 </div>
@@ -1528,6 +1553,8 @@ let searchTerm  = '';
 let compiledFiles = [];
 let currentCompiledFilter = 'all';
 let currentCompiledFile = null;
+let reportTemplateRows = [];
+let reportTemplateName = '';
 
 /* ════════════════════════════════════════
    HELPERS
@@ -1569,6 +1596,163 @@ function isScheduledRecord(r) {
 }
 function isScheduleDone(r) {
   return ['completa', 'completada', 'validado'].includes(String(r.cronograma_estado || r.estado || '').toLowerCase());
+}
+function normalizeKey(value) {
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '');
+}
+function normalizedRow(row) {
+  const out = {};
+  Object.entries(row || {}).forEach(([k, v]) => {
+    out[normalizeKey(k)] = v;
+  });
+  return out;
+}
+function pickRowValue(row, aliases) {
+  for (const alias of aliases) {
+    if (Object.prototype.hasOwnProperty.call(row, alias)) {
+      const value = row[alias];
+      if (value !== undefined && value !== null && String(value).trim() !== '') return value;
+    }
+  }
+  for (const alias of aliases) {
+    const key = normalizeKey(alias);
+    const match = Object.keys(row || {}).find(k => normalizeKey(k) === key);
+    if (match) {
+      const value = row[match];
+      if (value !== undefined && value !== null && String(value).trim() !== '') return value;
+    }
+  }
+  return '';
+}
+function toNumber(value) {
+  const raw = String(value == null ? '' : value).replace(/\s+/g, '').replace(',', '.').replace(/[^0-9.-]/g, '');
+  const num = Number(raw);
+  return Number.isFinite(num) ? num : 0;
+}
+function formatReportDate(value) {
+  if (!value) return '—';
+  if (value instanceof Date) return fmtDate(value.toISOString());
+  const maybeNumber = Number(value);
+  if (Number.isFinite(maybeNumber) && String(value).trim() !== '') {
+    const base = new Date(Date.UTC(1899, 11, 30));
+    base.setUTCDate(base.getUTCDate() + maybeNumber);
+    return fmtDate(base.toISOString());
+  }
+  return fmtDate(String(value));
+}
+function normalizeBusiness(value) {
+  const s = String(value || '').toUpperCase();
+  if (s.includes('MASSER')) return 'MASSER';
+  if (s.includes('FRANQ')) return 'FRANQUICIADA';
+  if (s.includes('AFILI')) return 'AFILIADA';
+  return s || '—';
+}
+function getReportTemplateRows() {
+  if (reportTemplateRows.length) return reportTemplateRows;
+  return allRecords.map(r => {
+    const vals = safeArr(r.validaciones);
+    const totalVals = VALIDACIONES_LIST.length || 1;
+    const doneVals = vals.length;
+    return {
+      codigo_unico: r.codigo_unico || r.version_nueva || '—',
+      regional: r.regional || '—',
+      nombre_eds: r.nombre_eds || r.responsable || '—',
+      negocio: normalizeBusiness(r.negocio || (isFixRecord(r) ? 'FIX' : 'Version')),
+      avance_texto: `${doneVals}/${totalVals}`,
+      estado: r.cronograma_estado || r.estado || '—',
+      fecha_programada: r.fecha_programada || r.fecha || '',
+      dia: r.dia || '—',
+      agente: r.agente || r.responsable || r.usuario_nombre || '—',
+      observaciones: r.observaciones || r.notas || '—',
+      cantidad_islas: r.cantidad_islas || '',
+      total_pq: r.total_pq || '',
+    };
+  });
+}
+function computeReportMetrics(rows) {
+  const total = rows.length;
+  const complete = rows.filter(r => {
+    const estado = String(r.estado || '').toUpperCase();
+    const totalPq = toNumber(r.total_pq);
+    const islas = toNumber(r.cantidad_islas);
+    return estado.includes('COMPLETA') || (totalPq > 0 && islas > 0 && islas >= totalPq);
+  }).length;
+  const partial = rows.filter(r => {
+    const estado = String(r.estado || '').toUpperCase();
+    const totalPq = toNumber(r.total_pq);
+    const islas = toNumber(r.cantidad_islas);
+    return estado.includes('PARC') || (totalPq > 0 && islas > 0 && islas < totalPq);
+  }).length;
+  const pending = Math.max(total - complete - partial, 0);
+  const franquiciadas = rows.filter(r => normalizeBusiness(r.negocio) === 'FRANQUICIADA').length;
+  const masser = rows.filter(r => normalizeBusiness(r.negocio) === 'MASSER').length;
+  const avance = total ? Math.round(((complete + (partial * 0.5)) / total) * 100) : 0;
+  return { total, complete, partial, pending, franquiciadas, masser, avance };
+}
+function renderReportTable(rows) {
+  const tbody = document.getElementById('report-body');
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="10"><div class="empty-state">Sin datos de cronograma.</div></td></tr>';
+    return;
+  }
+  tbody.innerHTML = rows.map(r => {
+    const negocio = normalizeBusiness(r.negocio);
+    const estado = String(r.estado || '—');
+    const stateSlug = estado === '—' ? 'pendiente' : (estado.toLowerCase().includes('complet') ? 'completada' : estado.toLowerCase().includes('parc') ? 'en-progreso' : 'pendiente');
+    return `<tr>
+      <td>${esc(r.codigo_unico || '—')}</td>
+      <td>${esc(r.regional || '—')}</td>
+      <td>${esc(r.nombre_eds || '—')}</td>
+      <td><span class="badge ${negocio === 'MASSER' ? 'fix' : negocio === 'FRANQUICIADA' ? 'completada' : 'en-progreso'}"><span class="badge-dot ${negocio === 'MASSER' ? 'fix' : negocio === 'FRANQUICIADA' ? 'completada' : 'en-progreso'}"></span>${esc(negocio)}</span></td>
+      <td>${esc(r.avance_texto || '—')}</td>
+      <td><span class="badge ${stateSlug}"><span class="badge-dot ${stateSlug}"></span>${esc(estado)}</span></td>
+      <td class="date-cell">${formatReportDate(r.fecha_programada)}</td>
+      <td>${esc(r.dia || '—')}</td>
+      <td>${esc(r.agente || '—')}</td>
+      <td>${esc(r.observaciones || '—')}</td>
+    </tr>`;
+  }).join('');
+}
+async function readExcelFile(file) {
+  if (!window.XLSX) throw new Error('No se pudo cargar el lector de Excel.');
+  const buffer = await file.arrayBuffer();
+  const wb = XLSX.read(buffer, { type: 'array', cellDates: true });
+  const sheet = wb.SheetNames[0];
+  if (!sheet) throw new Error('La plantilla no tiene hojas.');
+  return XLSX.utils.sheet_to_json(wb.Sheets[sheet], { defval: '' });
+}
+async function loadReportTemplate(file) {
+  const rows = await readExcelFile(file);
+  reportTemplateRows = rows.map(row => ({
+    codigo_unico: pickRowValue(row, ['COD_UNIC', 'COD_UNICO', 'Codigo', 'Código']),
+    regional: pickRowValue(row, ['Regional']),
+    nombre_eds: pickRowValue(row, ['Nombre EDS', 'NOMBRE EDS']),
+    negocio: pickRowValue(row, ['Negocio']),
+    cantidad_islas: pickRowValue(row, ['Cantidad islas', 'Cantidad Islas', 'ISLAS']),
+    total_pq: pickRowValue(row, ['Total PQ', 'TOTAL PQ', 'Total']),
+    estado: pickRowValue(row, ['Estado', 'ESTADO', 'Estado cronograma']),
+    version_anterior: pickRowValue(row, ['Versión Anterior', 'Version Anterior']),
+    version_actual: pickRowValue(row, ['Versión Actual', 'Version Actual']),
+    fecha_programada: pickRowValue(row, ['Fecha programada', 'Fecha Programada']),
+    dia: pickRowValue(row, ['DIA', 'Dia']),
+    agente: pickRowValue(row, ['Agente']),
+    observaciones: pickRowValue(row, ['Observaciones']),
+  })).filter(r => Object.values(r).some(v => String(v).trim() !== ''));
+  reportTemplateName = file.name;
+  document.getElementById('report-template-name').textContent = file.name;
+  renderAll();
+}
+function clearReportTemplate() {
+  reportTemplateRows = [];
+  reportTemplateName = '';
+  const input = document.getElementById('report-template-input');
+  if (input) input.value = '';
+  document.getElementById('report-template-name').textContent = 'Sin plantilla cargada';
+  renderAll();
 }
 function toast(msg, type = 'success') {
   const t = document.createElement('div');
@@ -1798,6 +1982,20 @@ document.querySelector('[data-menu="reports"]').addEventListener('click', () => 
   document.getElementById('reports-section').style.display = 'block';
   renderReports();
 });
+
+document.getElementById('report-template-input').addEventListener('change', async (e) => {
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+  try {
+    await loadReportTemplate(file);
+    toast('Plantilla cargada', 'success');
+  } catch (err) {
+    clearReportTemplate();
+    toast('No se pudo leer la plantilla: ' + err.message, 'error');
+  }
+});
+
+document.getElementById('report-template-clear').addEventListener('click', clearReportTemplate);
 
 // Settings menu item
 document.querySelector('[data-menu="settings"]').addEventListener('click', () => {
@@ -2115,36 +2313,22 @@ function renderStats() {
 }
 
 function renderReports() {
-  const scheduled = allRecords.filter(isScheduledRecord);
-  const complete = scheduled.filter(isScheduleDone);
-  const pending = scheduled.length - complete.length;
-  const progress = scheduled.length ? Math.round((complete.length / scheduled.length) * 100) : 0;
-
-  document.getElementById('report-total').textContent = scheduled.length;
-  document.getElementById('report-completas').textContent = complete.length;
-  document.getElementById('report-pendientes').textContent = pending;
-  document.getElementById('report-avance').textContent = `${progress}%`;
-  document.getElementById('report-count').textContent = `${scheduled.length} registro${scheduled.length !== 1 ? 's' : ''} programado${scheduled.length !== 1 ? 's' : ''}`;
-
-  const tbody = document.getElementById('report-body');
-  if (!scheduled.length) {
-    tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state">Sin datos de cronograma.</div></td></tr>';
-    return;
-  }
-
-  tbody.innerHTML = scheduled.map(r => {
-    const done = isScheduleDone(r);
-    const state = r.cronograma_estado || r.estado || 'Pendiente';
-    return `<tr>
-      <td>${esc(r.codigo_unico || '—')}</td>
-      <td>${esc(r.nombre_eds || '—')}</td>
-      <td>${esc(r.regional || '—')}</td>
-      <td class="date-cell">${fmtDate(r.fecha_programada)}</td>
-      <td><span class="badge ${done ? 'completada' : 'pendiente'}"><span class="badge-dot ${done ? 'completada' : 'pendiente'}"></span>${esc(state)}</span></td>
-      <td><span class="version-chip" style="color:var(--c-green)">${esc(r.version_nueva || '—')}</span></td>
-      <td>${esc(r.agente || '—')}</td>
-    </tr>`;
-  }).join('');
+  const rows = getReportTemplateRows();
+  const metrics = computeReportMetrics(rows);
+  document.getElementById('report-total').textContent = metrics.total;
+  document.getElementById('report-completas').textContent = metrics.complete;
+  document.getElementById('report-pendientes').textContent = metrics.pending;
+  document.getElementById('report-parciales').textContent = metrics.partial;
+  document.getElementById('report-franquiciadas').textContent = metrics.franquiciadas;
+  document.getElementById('report-masser').textContent = metrics.masser;
+  document.getElementById('report-avance').textContent = `${metrics.avance}%`;
+  document.getElementById('report-count').textContent = reportTemplateRows.length
+    ? `${metrics.total} filas en plantilla`
+    : `${metrics.total} registros del sistema`;
+  document.getElementById('report-template-name').textContent = reportTemplateRows.length
+    ? reportTemplateName
+    : 'Sin plantilla cargada';
+  renderReportTable(rows);
 }
 
 function renderUsersRoles() {
@@ -2586,7 +2770,7 @@ function esc(str) {
   return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 function jsArg(value) {
-  return JSON.stringify(String(value ?? '')).replace(/</g, '\\u003c').replace(/>/g, '\\u003e');
+  return JSON.stringify(String(value == null ? '' : value)).replace(/</g, '\\u003c').replace(/>/g, '\\u003e');
 }
 function slugId(s) {
   return s.toLowerCase().replace(/[^a-z0-9]/g,'-');
@@ -2676,18 +2860,43 @@ function updateCompiledCounters() {
   document.getElementById('count-compilados').textContent = compiledFiles.length;
 }
 
+function setCompiledFile(file) {
+  currentCompiledFile = file || null;
+  const zone = document.getElementById('drop-zone');
+  const label = document.getElementById('compiled-file-name');
+  const saveBtn = document.getElementById('upload-modal-save');
+  if (file) {
+    if (zone) {
+      zone.innerHTML = `<div class="upload-drop-icon">✅</div><div><strong>${esc(file.name)}</strong></div><div class="upload-drop-text">${(file.size / 1024 / 1024).toFixed(2)} MB</div>`;
+    }
+    if (label) label.textContent = file.name;
+    if (saveBtn) saveBtn.disabled = false;
+  } else {
+    if (zone) {
+      zone.innerHTML = `<div class="upload-drop-icon">📥</div><div><strong>Arrastra tu archivo aquí</strong></div><div class="upload-drop-text">o haz clic para seleccionar</div>`;
+    }
+    if (label) label.textContent = 'Ningún archivo seleccionado';
+    if (saveBtn) saveBtn.disabled = true;
+  }
+}
+
 // Upload modal events
 document.getElementById('btn-upload-compiled').addEventListener('click', () => {
-  currentCompiledFile = null;
+  setCompiledFile(null);
+  document.getElementById('compiled-file-input').value = '';
   document.getElementById('upload-compiled-modal').classList.add('open');
 });
 
 document.getElementById('upload-modal-close').addEventListener('click', () => {
   document.getElementById('upload-compiled-modal').classList.remove('open');
+  setCompiledFile(null);
+  document.getElementById('compiled-file-input').value = '';
 });
 
 document.getElementById('upload-modal-cancel').addEventListener('click', () => {
   document.getElementById('upload-compiled-modal').classList.remove('open');
+  setCompiledFile(null);
+  document.getElementById('compiled-file-input').value = '';
 });
 
 // Drag and drop
@@ -2710,22 +2919,24 @@ dropZone.addEventListener('drop', (e) => {
   dropZone.classList.remove('dragover');
   const files = e.dataTransfer.files;
   if (files.length > 0) {
-    currentCompiledFile = files[0];
-    dropZone.innerHTML = `<div class="upload-drop-icon">✅</div><div><strong>${currentCompiledFile.name}</strong></div><div class="upload-drop-text">${(currentCompiledFile.size / 1024 / 1024).toFixed(2)} MB</div>`;
+    setCompiledFile(files[0]);
   }
 });
 
 document.getElementById('compiled-file-input').addEventListener('change', (e) => {
   if (e.target.files.length > 0) {
-    currentCompiledFile = e.target.files[0];
-    const zone = document.getElementById('drop-zone');
-    zone.innerHTML = `<div class="upload-drop-icon">✅</div><div><strong>${currentCompiledFile.name}</strong></div><div class="upload-drop-text">${(currentCompiledFile.size / 1024 / 1024).toFixed(2)} MB</div>`;
+    setCompiledFile(e.target.files[0]);
   }
 });
 
 document.getElementById('upload-modal-save').addEventListener('click', async () => {
   if (!isAdmin()) { toast('Solo admins pueden subir compilados', 'error'); return; }
   if (!currentCompiledFile) { toast('Selecciona un archivo', 'error'); return; }
+  const btn = document.getElementById('upload-modal-save');
+  const originalText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Subiendo...';
+  try {
   
   const tipo = document.getElementById('compiled-type-select').value;
   const version = document.getElementById('compiled-version').value || 'sin-version';
@@ -2771,8 +2982,14 @@ document.getElementById('upload-modal-save').addEventListener('click', async () 
   document.getElementById('compiled-type-select').value = 'java';
   document.getElementById('compiled-version').value = '';
   document.getElementById('compiled-notes').value = '';
-  currentCompiledFile = null;
+  setCompiledFile(null);
   loadCompiledFiles();
+  } catch (err) {
+    toast('Error al subir compilado: ' + (err.message || err), 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = originalText;
+  }
 });
 
 // Compiled filter tabs
