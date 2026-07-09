@@ -144,7 +144,156 @@
     /* ─────────────────────────────────────────
        MAIN APP
     ───────────────────────────────────────── */
-    #main-app { display: none; min-height: 100vh; }
+    #main-app { 
+      display: none; 
+      min-height: 100vh; 
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      position: fixed; left: 0; top: 0; z-index: 99;
+      width: 280px; height: 100vh;
+      background: var(--c-surface);
+      border-right: 1px solid var(--c-border);
+      display: flex; flex-direction: column;
+      overflow-y: auto; overflow-x: hidden;
+      box-shadow: -1px 0 3px rgba(0,0,0,.08);
+    }
+    @media (prefers-color-scheme: dark) {
+      .sidebar { box-shadow: -1px 0 3px rgba(0,0,0,.3); }
+    }
+
+    /* SIDEBAR PROFILE SECTION */
+    .sidebar-profile {
+      padding: 1.5rem 1rem;
+      border-bottom: 1px solid var(--c-border);
+      display: flex; align-items: center; gap: 0.75rem;
+    }
+    .sidebar-profile-avatar {
+      width: 44px; height: 44px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--c-accent), var(--c-accent2));
+      display: flex; align-items: center; justify-content: center;
+      font-size: .9rem; font-weight: 600; color: white;
+      flex-shrink: 0; overflow: hidden;
+    }
+    .sidebar-profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .sidebar-profile-info {
+      flex: 1; min-width: 0;
+    }
+    .sidebar-profile-name {
+      font-size: .85rem; font-weight: 700; color: var(--c-text);
+      overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+    }
+    .sidebar-profile-role {
+      font-size: .7rem; color: var(--c-accent); font-weight: 600;
+      text-transform: uppercase; letter-spacing: .02em;
+    }
+    .sidebar-profile-actions {
+      display: flex; flex-direction: column; gap: .25rem;
+      font-size: .7rem;
+    }
+    .sidebar-profile-link {
+      color: var(--c-muted); cursor: pointer; transition: color var(--transition);
+      text-decoration: none;
+    }
+    .sidebar-profile-link:hover { color: var(--c-accent); }
+
+    /* SIDEBAR SEARCH */
+    .sidebar-search {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--c-border);
+    }
+    .sidebar-search-input {
+      width: 100%; padding: 0.5rem 0.75rem;
+      border: 1px solid var(--c-border);
+      border-radius: 8px;
+      background: var(--c-bg);
+      color: var(--c-text);
+      font-size: .8rem;
+      outline: none;
+      transition: border-color var(--transition);
+    }
+    .sidebar-search-input:focus {
+      border-color: var(--c-accent);
+      box-shadow: 0 0 0 2px rgba(214,43,0,.08);
+    }
+
+    /* SIDEBAR MENU */
+    .sidebar-menu {
+      flex: 1; padding: 1rem 0; overflow-y: auto;
+    }
+    .sidebar-menu-item {
+      display: flex; align-items: center; gap: 0.75rem;
+      padding: 0.75rem 1rem;
+      color: var(--c-text);
+      cursor: pointer;
+      transition: background var(--transition), color var(--transition);
+      user-select: none;
+      font-size: .9rem;
+      font-weight: 500;
+      position: relative;
+    }
+    .sidebar-menu-item-badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 20px; height: 20px; border-radius: 50%;
+      background: var(--c-accent); color: white;
+      font-size: .65rem; font-weight: 700;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .6; } }
+    .sidebar-menu-item-count {
+      font-size: .75rem; color: var(--c-muted);
+      margin-left: auto; margin-right: 0.5rem;
+    }
+    .sidebar-menu-item:hover {
+      background: var(--c-bg);
+      color: var(--c-accent);
+    }
+    .sidebar-menu-item.open {
+      background: rgba(214,43,0,.08);
+      color: var(--c-accent);
+    }
+    .sidebar-menu-item-icon {
+      width: 20px; height: 20px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; font-size: 1rem;
+    }
+    .sidebar-menu-item-chevron {
+      margin-left: auto;
+      transition: transform var(--transition);
+      font-size: .8rem;
+    }
+    .sidebar-menu-item.open .sidebar-menu-item-chevron {
+      transform: rotate(180deg);
+    }
+    .sidebar-submenu {
+      max-height: 0; overflow: hidden;
+      transition: max-height var(--transition);
+    }
+    .sidebar-submenu.open { max-height: 500px; }
+    .sidebar-submenu-item {
+      padding: 0.6rem 1rem 0.6rem 3rem;
+      color: var(--c-muted);
+      cursor: pointer;
+      transition: all var(--transition);
+      font-size: .85rem;
+      border-left: 2px solid transparent;
+      margin-left: 1rem;
+    }
+    .sidebar-submenu-item:hover {
+      color: var(--c-accent);
+      background: var(--c-bg);
+      border-left-color: var(--c-accent);
+    }
+
+    /* ADJUST MAIN APP CONTENT */
+    .app-wrapper {
+      margin-left: 280px;
+      display: flex; flex-direction: column;
+      flex: 1;
+    }
 
     /* TOPBAR */
     .topbar {
@@ -159,6 +308,10 @@
     }
     @media (prefers-color-scheme: dark) {
       .topbar { background: rgba(26,26,30,.88); }
+    }
+    @media (max-width: 1024px) {
+      .sidebar { display: none; }
+      .app-wrapper { margin-left: 0; }
     }
     .topbar-brand {
       display: flex; align-items: center; gap: .65rem;
@@ -598,6 +751,49 @@
     .confirm-sub { font-size: .875rem; color: var(--c-muted); margin-bottom: 1.5rem; }
     .confirm-actions { display: flex; gap: .75rem; justify-content: center; }
 
+    /* COMPILED FILES TABLE */
+    .compiled-badge {
+      display: inline-block; padding: .2rem .6rem;
+      border-radius: 6px; font-size: .73rem;
+      font-weight: 600; text-transform: uppercase;
+    }
+    .compiled-badge.java { background: var(--c-orange); color: white; }
+    .compiled-badge.python { background: var(--c-blue); color: white; }
+    .compiled-badge.nodejs { background: var(--c-green); color: white; }
+    .compiled-badge.windows { background: var(--c-purple); color: white; }
+    
+    .file-name-cell {
+      font-family: var(--mono); font-size: .8rem;
+      max-width: 200px; overflow: hidden; text-overflow: ellipsis;
+    }
+    .download-btn {
+      display: inline-flex; align-items: center; gap: .4rem;
+      padding: .4rem .7rem; border-radius: 6px;
+      background: var(--c-blue); color: white;
+      font-size: .75rem; font-weight: 600;
+      transition: opacity var(--transition);
+      cursor: pointer; border: none;
+    }
+    .download-btn:hover { opacity: .85; }
+
+    /* UPLOAD MODAL */
+    .upload-drop-zone {
+      border: 2px dashed var(--c-border);
+      border-radius: var(--r);
+      padding: 2rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all var(--transition);
+      background: var(--c-bg);
+    }
+    .upload-drop-zone:hover, .upload-drop-zone.dragover {
+      border-color: var(--c-accent);
+      background: rgba(214,43,0,.05);
+    }
+    .upload-drop-icon { font-size: 2.5rem; margin-bottom: .5rem; }
+    .upload-drop-text { color: var(--c-muted); font-size: .85rem; margin-top: .5rem; }
+    #compiled-file-input { display: none; }
+
     /* ADMIN USERS */
     .admin-panel {
       margin-top: 1.5rem;
@@ -671,26 +867,118 @@
 
 <!-- MAIN APP -->
 <div id="main-app">
-  <!-- TOPBAR -->
-  <header class="topbar">
-    <div class="topbar-brand">
-      <div class="brand-dot">⛽</div>
-      <span>TerpelPOS — Actualizaciones-creado Jhonatan Ramirez</span>
-    </div>
-    <div class="topbar-user">
-      <div class="user-avatar" id="user-avatar">?</div>
-      <div class="user-info">
-        <span class="user-name" id="user-name-display">—</span>
-        <span class="user-email" id="user-email-display">—</span>
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <!-- PROFILE -->
+    <div class="sidebar-profile">
+      <div class="sidebar-profile-avatar" id="sidebar-avatar">?</div>
+      <div class="sidebar-profile-info">
+        <div class="sidebar-profile-name" id="sidebar-name">—</div>
+        <div class="sidebar-profile-role" id="sidebar-role">Lectura</div>
+        <div class="sidebar-profile-actions">
+          <span class="sidebar-profile-link" id="sidebar-view-profile">Ver Perfil</span>
+          <span class="sidebar-profile-link" id="sidebar-logout">Cerrar sesión</span>
+        </div>
       </div>
-      <span class="role-pill" id="role-display">Lectura</span>
-      <button class="btn-admin admin-only" id="btn-toggle-users" type="button">Usuarios</button>
-      <button class="btn-logout" id="btn-logout">Cerrar sesión</button>
     </div>
-  </header>
 
-  <!-- CONTENT -->
-  <main class="page-content">
+    <!-- SEARCH -->
+    <div class="sidebar-search">
+      <input type="text" class="sidebar-search-input" id="sidebar-search" placeholder="Buscar…" />
+    </div>
+
+    <!-- MENU -->
+    <nav class="sidebar-menu">
+      <!-- DASHBOARD -->
+      <div class="sidebar-menu-item" data-menu="dashboard">
+        <div class="sidebar-menu-item-icon">📊</div>
+        <span>DASHBOARD</span>
+      </div>
+
+      <!-- VERSIONES -->
+      <div class="sidebar-menu-item" id="menu-versiones" data-submenu="versiones">
+        <div class="sidebar-menu-item-icon">📦</div>
+        <span>VERSIONES</span>
+        <div class="sidebar-menu-item-count" id="count-versiones">0</div>
+        <div class="sidebar-menu-item-chevron">▼</div>
+      </div>
+      <div class="sidebar-submenu" id="submenu-versiones">
+        <div class="sidebar-submenu-item" data-version-filter="todas">Todas</div>
+        <div class="sidebar-submenu-item" data-version-filter="Pendiente">Pendiente</div>
+        <div class="sidebar-submenu-item" data-version-filter="En progreso">En progreso</div>
+        <div class="sidebar-submenu-item" data-version-filter="Completada">Completada</div>
+        <div class="sidebar-submenu-item" data-version-filter="Validado">Validado</div>
+      </div>
+
+      <!-- FIX -->
+      <div class="sidebar-menu-item" id="menu-fix" data-submenu="fix">
+        <div class="sidebar-menu-item-icon">🔧</div>
+        <span>FIX</span>
+        <div class="sidebar-menu-item-count" id="count-fix">0</div>
+        <div id="badge-fix" class="sidebar-menu-item-badge" style="display:none;">!</div>
+        <div class="sidebar-menu-item-chevron">▼</div>
+      </div>
+      <div class="sidebar-submenu" id="submenu-fix">
+        <div class="sidebar-submenu-item" data-fix-filter="hotfix">Hotfix</div>
+        <div class="sidebar-submenu-item" data-fix-filter="patch">Patch</div>
+        <div class="sidebar-submenu-item" data-fix-filter="urgent">Urgent</div>
+        <div class="sidebar-submenu-item" data-fix-filter="roadmap">Roadmap</div>
+      </div>
+
+      <!-- COMPILADOS -->
+      <div class="sidebar-menu-item" id="menu-compilados" data-submenu="compilados">
+        <div class="sidebar-menu-item-icon">📦</div>
+        <span>COMPILADOS</span>
+        <div class="sidebar-menu-item-count" id="count-compilados">0</div>
+        <div class="sidebar-menu-item-chevron">▼</div>
+      </div>
+      <div class="sidebar-submenu" id="submenu-compilados">
+        <div class="sidebar-submenu-item" data-compiled-view="all">Ver todos</div>
+        <div class="sidebar-submenu-item" data-compiled-view="java">Java/JAR</div>
+        <div class="sidebar-submenu-item" data-compiled-view="python">Python</div>
+        <div class="sidebar-submenu-item" data-compiled-view="nodejs">Node.js</div>
+      </div>
+
+      <!-- OTHER MENU ITEMS LIKE IN IMAGE -->
+      <div class="sidebar-menu-item" data-menu="reports">
+        <div class="sidebar-menu-item-icon">📈</div>
+        <span>REPORTES</span>
+      </div>
+      
+      <div class="sidebar-menu-item" data-menu="settings">
+        <div class="sidebar-menu-item-icon">⚙️</div>
+        <span>CONFIGURACION</span>
+      </div>
+      
+      <div class="sidebar-menu-item" data-menu="users">
+        <div class="sidebar-menu-item-icon">👥</div>
+        <span>USUARIOS</span>
+      </div>
+    </nav>
+  </aside>
+
+  <!-- APP WRAPPER -->
+  <div class="app-wrapper">
+    <!-- TOPBAR -->
+    <header class="topbar">
+      <div class="topbar-brand">
+        <div class="brand-dot">⛽</div>
+        <span>TerpelPOS — Actualizaciones-creado Jhonatan Ramirez</span>
+      </div>
+      <div class="topbar-user">
+        <div class="user-avatar" id="user-avatar">?</div>
+        <div class="user-info">
+          <span class="user-name" id="user-name-display">—</span>
+          <span class="user-email" id="user-email-display">—</span>
+        </div>
+        <span class="role-pill" id="role-display">Lectura</span>
+        <button class="btn-admin admin-only" id="btn-toggle-users" type="button">Usuarios</button>
+        <button class="btn-logout" id="btn-logout">Cerrar sesión</button>
+      </div>
+    </header>
+
+    <!-- CONTENT -->
+    <main class="page-content" id="main-content-section">
     <div class="page-header">
       <div>
         <h2 class="page-title">Control de Actualizaciones</h2>
@@ -802,7 +1090,60 @@
       </div>
     </section>
   </main>
-</div>
+
+  <!-- COMPILADOS SECTION -->
+  <main class="page-content" id="compilados-section" style="display:none;">
+    <div class="page-header">
+      <div>
+        <h2 class="page-title">Compilados & Releases</h2>
+        <p class="page-sub">Gestiona archivos ZIP, JAR, y ejecutables compilados</p>
+      </div>
+      <button class="btn-new write-action" id="btn-upload-compiled" type="button">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Subir Compilado
+      </button>
+    </div>
+
+    <!-- FILTER TABS -->
+    <div class="toolbar" style="margin-bottom:1.5rem;">
+      <div class="filter-tabs" id="compiled-filter-tabs">
+        <button class="filter-tab active" data-compiled-type="todas">Todos</button>
+        <button class="filter-tab" data-compiled-type="java">Java/JAR</button>
+        <button class="filter-tab" data-compiled-type="python">Python</button>
+        <button class="filter-tab" data-compiled-type="nodejs">Node.js</button>
+        <button class="filter-tab" data-compiled-type="windows">Windows EXE</button>
+      </div>
+    </div>
+
+    <!-- TABLE COMPILADOS -->
+    <div class="table-wrap">
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Archivo</th>
+              <th>Tipo</th>
+              <th>Versión</th>
+              <th>Tamaño</th>
+              <th>Fecha Subida</th>
+              <th>Subido por</th>
+              <th>Descargas</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="compiled-body">
+            <tr><td colspan="8"><div class="empty-state"><div class="spinner" style="margin:0 auto"></div></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="table-footer" id="compiled-footer">
+        <span id="compiled-count">Cargando…</span>
+      </div>
+    </div>
+  </main>
+
+  </div><!-- end app-wrapper -->
+</div><!-- end main-app -->
 
 <!-- MODAL: CREAR / EDITAR -->
 <div class="modal-overlay" id="form-modal">
@@ -923,6 +1264,57 @@
   </div>
 </div>
 
+<!-- MODAL: SUBIR COMPILADO -->
+<div class="modal-overlay" id="upload-compiled-modal">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="upload-modal-title">
+    <div class="modal-header">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--c-accent)" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      <h3 class="modal-title" id="upload-modal-title">Subir Compilado</h3>
+      <button class="modal-close" id="upload-modal-close" aria-label="Cerrar">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <!-- DROP ZONE -->
+      <div class="upload-drop-zone" id="drop-zone">
+        <div class="upload-drop-icon">📥</div>
+        <div><strong>Arrastra tu archivo aquí</strong></div>
+        <div class="upload-drop-text">o haz clic para seleccionar</div>
+      </div>
+      <input type="file" id="compiled-file-input" accept=".zip,.jar,.exe,.tar,.gz" />
+
+      <!-- FILE INFO -->
+      <div class="form-row" style="margin-top:1.5rem;">
+        <div class="field">
+          <label>Tipo de compilado</label>
+          <select id="compiled-type-select">
+            <option value="java">Java/JAR</option>
+            <option value="python">Python</option>
+            <option value="nodejs">Node.js</option>
+            <option value="windows">Windows EXE</option>
+            <option value="linux">Linux Binary</option>
+            <option value="otros">Otros</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Versión (ej: v2.5.0)</label>
+          <input type="text" id="compiled-version" placeholder="v2.5.0" />
+        </div>
+      </div>
+
+      <!-- NOTES -->
+      <div class="field">
+        <label>Notas / Cambios</label>
+        <textarea id="compiled-notes" placeholder="Describe qué contiene este compilado…" rows="3"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" id="upload-modal-cancel">Cancelar</button>
+      <button class="btn btn-primary" id="upload-modal-save">Subir Compilado</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL: DETALLE -->
 <div class="modal-overlay" id="detail-modal">
   <div class="modal" role="dialog" aria-modal="true">
@@ -1016,6 +1408,9 @@ let editingId   = null;
 let deleteTarget= null;
 let activeFilter= 'todas';
 let searchTerm  = '';
+let compiledFiles = [];
+let currentCompiledFilter = 'all';
+let currentCompiledFile = null;
 
 /* ════════════════════════════════════════
    HELPERS
@@ -1059,6 +1454,7 @@ function applyRoleUI() {
   document.body.classList.toggle('is-admin', isAdmin());
   document.body.classList.toggle('is-readonly', !isAdmin());
   document.getElementById('role-display').textContent = isAdmin() ? 'Admin' : 'Lectura';
+  document.getElementById('sidebar-role').textContent = isAdmin() ? 'Admin' : 'Lectura';
   if (!isAdmin()) {
     const panel = document.getElementById('users-panel');
     if (panel) panel.style.display = 'none';
@@ -1096,12 +1492,24 @@ async function setUser(user) {
   currentUser = user;
   document.getElementById('user-name-display').textContent  = user.user_metadata?.full_name || user.email;
   document.getElementById('user-email-display').textContent = user.email;
+  
+  // Update avatar in topbar
   const av = document.getElementById('user-avatar');
   if (user.user_metadata?.avatar_url) {
     av.innerHTML = `<img src="${user.user_metadata.avatar_url}" alt="" />`;
   } else {
     av.textContent = (user.email || '?')[0].toUpperCase();
   }
+  
+  // Update sidebar
+  document.getElementById('sidebar-name').textContent = user.user_metadata?.full_name || user.email;
+  const sidebarAvatar = document.getElementById('sidebar-avatar');
+  if (user.user_metadata?.avatar_url) {
+    sidebarAvatar.innerHTML = `<img src="${user.user_metadata.avatar_url}" alt="" />`;
+  } else {
+    sidebarAvatar.textContent = (user.email || '?')[0].toUpperCase();
+  }
+  
   showApp();
   await loadCurrentRole();
   applyRoleUI();
@@ -1140,6 +1548,181 @@ document.getElementById('btn-logout').addEventListener('click', async () => {
   showLogin();
 });
 
+/* ════════════════════════════════════════
+   SIDEBAR NAVIGATION
+════════════════════════════════════════ */
+// Sidebar logout
+document.getElementById('sidebar-logout').addEventListener('click', async () => {
+  await sb.auth.signOut();
+  currentUser = null;
+  currentRole = 'lectura';
+  usersRoles = [];
+  customItems = [];
+  allRecords = [];
+  showLogin();
+});
+
+// Submenu toggles
+document.getElementById('menu-versiones').addEventListener('click', () => {
+  const submenu = document.getElementById('submenu-versiones');
+  const menuItem = document.getElementById('menu-versiones');
+  submenu.classList.toggle('open');
+  menuItem.classList.toggle('open');
+});
+
+document.getElementById('menu-fix').addEventListener('click', () => {
+  const submenu = document.getElementById('submenu-fix');
+  const menuItem = document.getElementById('menu-fix');
+  submenu.classList.toggle('open');
+  menuItem.classList.toggle('open');
+});
+
+document.getElementById('menu-compilados').addEventListener('click', () => {
+  const submenu = document.getElementById('submenu-compilados');
+  const menuItem = document.getElementById('menu-compilados');
+  submenu.classList.toggle('open');
+  menuItem.classList.toggle('open');
+  // Show compilados section
+  document.querySelector('.page-content').style.display = 'none';
+  document.getElementById('compilados-section').style.display = 'block';
+  loadCompiledFiles();
+});
+
+// Version filter handlers
+document.querySelectorAll('[data-version-filter]').forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    const filter = e.currentTarget.getAttribute('data-version-filter');
+    // Trigger filter in main table
+    const filterBtn = document.querySelector(`.filter-tab[data-filter="${filter}"]`);
+    if (filterBtn) filterBtn.click();
+    // Highlight selected
+    document.querySelectorAll('[data-version-filter]').forEach(b => b.style.fontWeight = 'normal');
+    e.currentTarget.style.fontWeight = '700';
+  });
+});
+
+// Fix filter handlers
+document.querySelectorAll('[data-fix-filter]').forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    const fix = e.currentTarget.getAttribute('data-fix-filter');
+    console.log('Fix filter:', fix);
+    toast(`Filtro FIX: ${fix}`, 'info');
+  });
+});
+
+// Compiled filter handlers
+document.querySelectorAll('[data-compiled-view]').forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    const view = e.currentTarget.getAttribute('data-compiled-view');
+    currentCompiledFilter = view;
+    renderCompiledTable();
+    document.querySelectorAll('[data-compiled-view]').forEach(b => b.style.fontWeight = 'normal');
+    e.currentTarget.style.fontWeight = '700';
+  });
+});
+
+// Dashboard menu item
+document.querySelector('[data-menu="dashboard"]').addEventListener('click', () => {
+  // Show main section
+  document.querySelector('.page-content').style.display = 'block';
+  document.getElementById('compilados-section').style.display = 'none';
+  // Reset all filters
+  const allTab = document.querySelector('.filter-tab[data-filter="todas"]');
+  if (allTab) allTab.click();
+  toast('Dashboard activado', 'info');
+});
+
+// Reports menu item
+document.querySelector('[data-menu="reports"]').addEventListener('click', () => {
+  toast('Módulo de Reportes - Próximamente', 'info');
+});
+
+// Settings menu item
+document.querySelector('[data-menu="settings"]').addEventListener('click', () => {
+  toast('Módulo de Configuración - Próximamente', 'info');
+});
+
+// Users menu item
+document.querySelector('[data-menu="users"]').addEventListener('click', () => {
+  if (isAdmin()) {
+    document.getElementById('btn-toggle-users').click();
+  } else {
+    toast('Solo admins pueden gestionar usuarios', 'error');
+  }
+});
+
+/* ════════════════════════════════════════
+   KEYBOARD SHORTCUTS
+════════════════════════════════════════ */
+document.addEventListener('keydown', (e) => {
+  // Evitar si está escribiendo en input
+  if (document.activeElement.tagName === 'INPUT' && document.activeElement.id !== 'sidebar-search') return;
+  
+  const key = e.key.toLowerCase();
+  
+  if (key === 'v') {
+    // V = Abrir/cerrar VERSIONES
+    document.getElementById('menu-versiones').click();
+    e.preventDefault();
+  } else if (key === 'f') {
+    // F = Abrir/cerrar FIX
+    document.getElementById('menu-fix').click();
+    e.preventDefault();
+  } else if (key === 'n') {
+    // N = Nueva actualización
+    document.getElementById('btn-open-create').click();
+    e.preventDefault();
+  }
+});
+
+/* ════════════════════════════════════════
+   SIDEBAR SEARCH
+════════════════════════════════════════ */
+const sidebarSearch = document.getElementById('sidebar-search');
+sidebarSearch.addEventListener('input', (e) => {
+  const term = e.target.value.toLowerCase();
+  
+  // Filter sidebar items
+  document.querySelectorAll('.sidebar-submenu-item').forEach(item => {
+    const text = item.textContent.toLowerCase();
+    if (term === '' || text.includes(term)) {
+      item.style.display = 'block';
+    } else {
+      item.style.display = 'none';
+    }
+  });
+});
+
+/* ════════════════════════════════════════
+   UPDATE SIDEBAR COUNTERS
+════════════════════════════════════════ */
+function updateSidebarCounters() {
+  if (!allRecords) return;
+  
+  // Count versions by status
+  const pendiente = allRecords.filter(r => r.estado === 'Pendiente').length;
+  const progreso = allRecords.filter(r => r.estado === 'En progreso').length;
+  const completada = allRecords.filter(r => r.estado === 'Completada').length;
+  const validado = allRecords.filter(r => r.estado === 'Validado').length;
+  const total = allRecords.length;
+  
+  // Update counters
+  document.getElementById('count-versiones').textContent = total;
+  
+  // FIX counter - simulate with a portion of records
+  const fixCount = Math.floor(total * 0.3); // 30% are fixes
+  document.getElementById('count-fix').textContent = fixCount;
+  
+  // Show badge if there are fixes and some are new/recent
+  const badge = document.getElementById('badge-fix');
+  if (fixCount > 0) {
+    badge.style.display = 'flex';
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+/* Update counters when records load or change */
 /* ════════════════════════════════════════
    DATA
 ════════════════════════════════════════ */
@@ -1376,6 +1959,7 @@ function renderTable() {
       <div class="empty-title">Sin registros</div>
       <div class="empty-sub">No se encontraron actualizaciones con los filtros aplicados.</div>
     </div></td></tr>`;
+    updateSidebarCounters();
     return;
   }
 
@@ -1429,6 +2013,8 @@ function renderTable() {
       </td>
     </tr>`;
   }).join('');
+  
+  updateSidebarCounters();
 }
 
 function setTableLoading() {
@@ -1747,6 +2333,238 @@ function init() {
   buildValGrid();
   // Start auth
   initAuth();
+}
+
+/* ════════════════════════════════════════
+   COMPILED FILES MANAGEMENT
+════════════════════════════════════════ */
+async function loadCompiledFiles() {
+  setCompiledTableLoading();
+  const { data, error } = await sb
+    .from('compilados')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    toast('Error al cargar compilados: ' + error.message, 'error');
+    return;
+  }
+  compiledFiles = data || [];
+  renderCompiledTable();
+  updateCompiledCounters();
+}
+
+function renderCompiledTable() {
+  const tbody = document.getElementById('compiled-body');
+  let recs = compiledFiles;
+  
+  if (currentCompiledFilter !== 'all') {
+    recs = compiledFiles.filter(f => f.tipo === currentCompiledFilter);
+  }
+  
+  document.getElementById('compiled-count').textContent =
+    `${recs.length} archivo${recs.length !== 1 ? 's' : ''}`;
+
+  if (recs.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state">
+      <div class="empty-icon">📦</div>
+      <div class="empty-title">Sin compilados</div>
+      <div class="empty-sub">No hay archivos compilados disponibles.</div>
+    </div></td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = recs.map(r => {
+    const tamaño = r.tamaño ? `${(r.tamaño / 1024 / 1024).toFixed(2)} MB` : '—';
+    return `<tr>
+      <td class="file-name-cell" title="${esc(r.nombre_archivo)}">${esc(r.nombre_archivo)}</td>
+      <td><span class="compiled-badge ${r.tipo}">${esc(r.tipo)}</span></td>
+      <td>${esc(r.version || '—')}</td>
+      <td>${tamaño}</td>
+      <td class="date-cell">${fmtDate(r.created_at)}</td>
+      <td>${esc(r.usuario_nombre || r.usuario_email || '—')}</td>
+      <td><span style="font-weight:600">${r.descargas || 0}</span></td>
+      <td>
+        <div class="row-actions">
+          <button class="download-btn" onclick="downloadCompiled('${r.id}', '${r.nombre_archivo}')">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Descargar
+          </button>
+          ${isAdmin() ? `<button class="btn-icon delete write-action" onclick="deleteCompiled('${r.id}')" title="Eliminar" style="color:var(--c-danger);">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
+          </button>` : ''}
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function setCompiledTableLoading() {
+  document.getElementById('compiled-body').innerHTML =
+    `<tr><td colspan="8"><div class="empty-state"><div class="spinner" style="margin:0 auto"></div></div></td></tr>`;
+}
+
+function updateCompiledCounters() {
+  document.getElementById('count-compilados').textContent = compiledFiles.length;
+}
+
+// Upload modal events
+document.getElementById('btn-upload-compiled').addEventListener('click', () => {
+  currentCompiledFile = null;
+  document.getElementById('upload-compiled-modal').classList.add('open');
+});
+
+document.getElementById('upload-modal-close').addEventListener('click', () => {
+  document.getElementById('upload-compiled-modal').classList.remove('open');
+});
+
+document.getElementById('upload-modal-cancel').addEventListener('click', () => {
+  document.getElementById('upload-compiled-modal').classList.remove('open');
+});
+
+// Drag and drop
+const dropZone = document.getElementById('drop-zone');
+dropZone.addEventListener('click', () => {
+  document.getElementById('compiled-file-input').click();
+});
+
+dropZone.addEventListener('dragover', (e) => {
+  e.preventDefault();
+  dropZone.classList.add('dragover');
+});
+
+dropZone.addEventListener('dragleave', () => {
+  dropZone.classList.remove('dragover');
+});
+
+dropZone.addEventListener('drop', (e) => {
+  e.preventDefault();
+  dropZone.classList.remove('dragover');
+  const files = e.dataTransfer.files;
+  if (files.length > 0) {
+    currentCompiledFile = files[0];
+    dropZone.innerHTML = `<div class="upload-drop-icon">✅</div><div><strong>${currentCompiledFile.name}</strong></div><div class="upload-drop-text">${(currentCompiledFile.size / 1024 / 1024).toFixed(2)} MB</div>`;
+  }
+});
+
+document.getElementById('compiled-file-input').addEventListener('change', (e) => {
+  if (e.target.files.length > 0) {
+    currentCompiledFile = e.target.files[0];
+    const zone = document.getElementById('drop-zone');
+    zone.innerHTML = `<div class="upload-drop-icon">✅</div><div><strong>${currentCompiledFile.name}</strong></div><div class="upload-drop-text">${(currentCompiledFile.size / 1024 / 1024).toFixed(2)} MB</div>`;
+  }
+});
+
+document.getElementById('upload-modal-save').addEventListener('click', async () => {
+  if (!isAdmin()) { toast('Solo admins pueden subir compilados', 'error'); return; }
+  if (!currentCompiledFile) { toast('Selecciona un archivo', 'error'); return; }
+  
+  const tipo = document.getElementById('compiled-type-select').value;
+  const version = document.getElementById('compiled-version').value || 'sin-version';
+  const notas = document.getElementById('compiled-notes').value || '';
+  
+  // Crear nombre único
+  const timestamp = Date.now();
+  const newFileName = `${tipo}-${version}-${timestamp}.${currentCompiledFile.name.split('.').pop()}`;
+  
+  // Subir a Supabase Storage
+  const { error: uploadError } = await sb.storage
+    .from('compilados')
+    .upload(newFileName, currentCompiledFile);
+  
+  if (uploadError) {
+    toast('Error al subir archivo: ' + uploadError.message, 'error');
+    return;
+  }
+  
+  // Guardar metadata en tabla
+  const { error: dbError } = await sb.from('compilados').insert([{
+    nombre_archivo: currentCompiledFile.name,
+    tipo: tipo,
+    version: version,
+    tamaño: currentCompiledFile.size,
+    ruta_almacenamiento: newFileName,
+    usuario_email: currentUser.email,
+    usuario_nombre: currentUser.user_metadata?.full_name || currentUser.email,
+    notas: notas,
+    descargas: 0,
+    created_at: new Date().toISOString()
+  }]);
+  
+  if (dbError) {
+    toast('Error al guardar metadata: ' + dbError.message, 'error');
+    return;
+  }
+  
+  toast('Compilado subido exitosamente ✓', 'success');
+  document.getElementById('upload-compiled-modal').classList.remove('open');
+  document.getElementById('drop-zone').innerHTML = `<div class="upload-drop-icon">📥</div><div><strong>Arrastra tu archivo aquí</strong></div><div class="upload-drop-text">o haz clic para seleccionar</div>`;
+  document.getElementById('compiled-file-input').value = '';
+  document.getElementById('compiled-type-select').value = 'java';
+  document.getElementById('compiled-version').value = '';
+  document.getElementById('compiled-notes').value = '';
+  currentCompiledFile = null;
+  loadCompiledFiles();
+});
+
+// Compiled filter tabs
+document.querySelectorAll('[data-compiled-type]').forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    const type = e.currentTarget.getAttribute('data-compiled-type');
+    currentCompiledFilter = type === 'todas' ? 'all' : type;
+    document.querySelectorAll('[data-compiled-type]').forEach(b => b.classList.remove('active'));
+    e.currentTarget.classList.add('active');
+    renderCompiledTable();
+  });
+});
+
+async function downloadCompiled(id, fileName) {
+  try {
+    const compiled = compiledFiles.find(f => f.id === id);
+    if (!compiled) { toast('Archivo no encontrado', 'error'); return; }
+    
+    // Get download URL
+    const { data } = sb.storage
+      .from('compilados')
+      .getPublicUrl(compiled.ruta_almacenamiento);
+    
+    if (data && data.publicUrl) {
+      // Increment download counter
+      await sb.from('compilados')
+        .update({ descargas: (compiled.descargas || 0) + 1 })
+        .eq('id', id);
+      
+      // Trigger download
+      const a = document.createElement('a');
+      a.href = data.publicUrl;
+      a.download = fileName;
+      a.click();
+      
+      loadCompiledFiles();
+    }
+  } catch (err) {
+    toast('Error al descargar: ' + err.message, 'error');
+  }
+}
+
+async function deleteCompiled(id) {
+  if (!isAdmin()) { toast('Solo admins pueden eliminar', 'error'); return; }
+  if (!confirm('¿Estás seguro de que deseas eliminar este compilado?')) return;
+  
+  try {
+    const compiled = compiledFiles.find(f => f.id === id);
+    if (compiled) {
+      // Delete from storage
+      await sb.storage.from('compilados').remove([compiled.ruta_almacenamiento]);
+    }
+    
+    // Delete from database
+    await sb.from('compilados').delete().eq('id', id);
+    toast('Compilado eliminado', 'info');
+    loadCompiledFiles();
+  } catch (err) {
+    toast('Error al eliminar: ' + err.message, 'error');
+  }
 }
 
 init();
