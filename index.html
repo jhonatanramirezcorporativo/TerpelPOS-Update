@@ -1652,26 +1652,7 @@ function normalizeBusiness(value) {
   return s || '—';
 }
 function getReportTemplateRows() {
-  if (reportTemplateRows.length) return reportTemplateRows;
-  return allRecords.map(r => {
-    const vals = safeArr(r.validaciones);
-    const totalVals = VALIDACIONES_LIST.length || 1;
-    const doneVals = vals.length;
-    return {
-      codigo_unico: r.codigo_unico || r.version_nueva || '—',
-      regional: r.regional || '—',
-      nombre_eds: r.nombre_eds || r.responsable || '—',
-      negocio: normalizeBusiness(r.negocio || (isFixRecord(r) ? 'FIX' : 'Version')),
-      avance_texto: `${doneVals}/${totalVals}`,
-      estado: r.cronograma_estado || r.estado || '—',
-      fecha_programada: r.fecha_programada || r.fecha || '',
-      dia: r.dia || '—',
-      agente: r.agente || r.responsable || r.usuario_nombre || '—',
-      observaciones: r.observaciones || r.notas || '—',
-      cantidad_islas: r.cantidad_islas || '',
-      total_pq: r.total_pq || '',
-    };
-  });
+  return reportTemplateRows;
 }
 function computeReportMetrics(rows) {
   const total = rows.length;
@@ -1696,7 +1677,7 @@ function computeReportMetrics(rows) {
 function renderReportTable(rows) {
   const tbody = document.getElementById('report-body');
   if (!rows.length) {
-    tbody.innerHTML = '<tr><td colspan="10"><div class="empty-state">Sin datos de cronograma.</div></td></tr>';
+    tbody.innerHTML = '<tr><td colspan="10"><div class="empty-state"><div class="empty-title">Sin plantilla cargada</div><div class="empty-sub">Carga tu Excel para ver FRANQUICIAS, MASSER y AFILIADA.</div></div></td></tr>';
     return;
   }
   tbody.innerHTML = rows.map(r => {
@@ -2324,7 +2305,7 @@ function renderReports() {
   document.getElementById('report-avance').textContent = `${metrics.avance}%`;
   document.getElementById('report-count').textContent = reportTemplateRows.length
     ? `${metrics.total} filas en plantilla`
-    : `${metrics.total} registros del sistema`;
+    : '0 filas en plantilla';
   document.getElementById('report-template-name').textContent = reportTemplateRows.length
     ? reportTemplateName
     : 'Sin plantilla cargada';
