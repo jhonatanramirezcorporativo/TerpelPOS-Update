@@ -924,7 +924,7 @@
         <div class="sidebar-menu-item-chevron">▼</div>
       </div>
       <div class="sidebar-submenu" id="submenu-fix">
-        <div class="sidebar-submenu-item" data-fix-filter="fix">Todos los FIX</div>
+        <div class="sidebar-submenu-item" data-fix-filter="fix">Solo FIX</div>
         <div class="sidebar-submenu-item" data-fix-filter="hotfix">Hotfix</div>
         <div class="sidebar-submenu-item" data-fix-filter="patch">Patch</div>
         <div class="sidebar-submenu-item" data-fix-filter="urgent">Urgent</div>
@@ -1708,6 +1708,18 @@ document.getElementById('menu-fix').addEventListener('click', () => {
   const menuItem = document.getElementById('menu-fix');
   submenu.classList.toggle('open');
   menuItem.classList.toggle('open');
+  activeFixFilter = 'fix';
+  activeFilter = 'todas';
+  document.getElementById('main-content-section').style.display = 'block';
+  document.getElementById('compilados-section').style.display = 'none';
+  const reportsSection = document.getElementById('reports-section');
+  if (reportsSection) reportsSection.style.display = 'none';
+  document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
+  document.querySelector('.filter-tab[data-filter="todas"]')?.classList.add('active');
+  document.querySelectorAll('[data-fix-filter]').forEach(b => b.style.fontWeight = 'normal');
+  const defaultFix = document.querySelector('[data-fix-filter="fix"]');
+  if (defaultFix) defaultFix.style.fontWeight = '700';
+  renderAll();
 });
 
 document.getElementById('menu-compilados').addEventListener('click', () => {
@@ -1805,6 +1817,7 @@ document.querySelector('[data-menu="users"]').addEventListener('click', () => {
    KEYBOARD SHORTCUTS
 ════════════════════════════════════════ */
 document.addEventListener('keydown', (e) => {
+  return;
   // Evitar si está escribiendo en input
   if (document.activeElement.tagName === 'INPUT' && document.activeElement.id !== 'sidebar-search') return;
   
