@@ -1989,16 +1989,21 @@ function itemExists(category, name) {
    AUTH
 â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 async function initAuth() {
-  const { data: { session } } = await sb.auth.getSession();
-  if (session) {
-    setUser(session.user);
-  } else {
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (session) {
+      setUser(session.user);
+    } else {
+      showLogin();
+    }
+    sb.auth.onAuthStateChange((_ev, sess) => {
+      if (sess) { setUser(sess.user); }
+      else      { showLogin(); }
+    });
+  } catch (err) {
+    console.error('Auth init failed', err);
     showLogin();
   }
-  sb.auth.onAuthStateChange((_ev, sess) => {
-    if (sess) { setUser(sess.user); }
-    else      { showLogin(); }
-  });
 }
 
 async function setUser(user) {
@@ -3004,6 +3009,12 @@ function init() {
   buildValGrid();
   restoreReportTemplateState();
   setActiveMenu('dashboard');
+  setTimeout(() => {
+    const loading = document.getElementById('app-loading');
+    if (loading && getComputedStyle(loading).display !== 'none') {
+      showLogin();
+    }
+  }, 1500);
   // Start auth
   initAuth();
 }
