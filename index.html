@@ -398,6 +398,10 @@
       grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
       gap: 1rem; margin-bottom: 1.75rem;
     }
+    .report-stats-grid {
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: .75rem;
+    }
     .stat-card {
       background: var(--c-surface);
       border: 1px solid var(--c-border);
@@ -405,8 +409,13 @@
       padding: 1.1rem 1.2rem;
       box-shadow: var(--c-shadow);
     }
+    .report-stats-grid .stat-card {
+      padding: .85rem .95rem;
+    }
     .stat-label { font-size: .78rem; font-weight: 500; color: var(--c-muted); text-transform: uppercase; letter-spacing: .05em; }
     .stat-value { font-size: 2rem; font-weight: 700; letter-spacing: -.04em; margin-top: .2rem; font-variant-numeric: tabular-nums; }
+    .report-stats-grid .stat-label { font-size: .7rem; }
+    .report-stats-grid .stat-value { font-size: 1.45rem; margin-top: .1rem; }
     .stat-card.total .stat-value { color: var(--c-text); }
     .stat-card.completada .stat-value { color: var(--c-green); }
     .stat-card.progreso .stat-value { color: var(--c-blue); }
@@ -1277,7 +1286,7 @@
       <span class="page-sub" id="report-template-name">Sin plantilla cargada</span>
     </div>
 
-    <div class="stats-grid">
+    <div class="stats-grid report-stats-grid">
       <div class="stat-card total">
         <div class="stat-label">Programadas</div>
         <div class="stat-value" id="report-total">0</div>
@@ -1302,9 +1311,17 @@
         <div class="stat-label">Franquiciadas</div>
         <div class="stat-value" id="report-franquiciadas">0</div>
       </div>
+      <div class="stat-card validado">
+        <div class="stat-label">Afiliadas</div>
+        <div class="stat-value" id="report-afiliadas">0</div>
+      </div>
       <div class="stat-card progreso">
         <div class="stat-label">MASSER</div>
         <div class="stat-value" id="report-masser">0</div>
+      </div>
+      <div class="stat-card pendiente">
+        <div class="stat-label">Industrias</div>
+        <div class="stat-value" id="report-industrias">0</div>
       </div>
     </div>
 
@@ -1453,7 +1470,7 @@
         </div>
       </div>
 
-      <div class="form-row three">
+      <div class="form-row two">
         <div class="field">
           <label>Tipo</label>
           <select id="f-tipo_registro">
@@ -1470,42 +1487,6 @@
             <option value="urgent">Urgente</option>
             <option value="roadmap">Roadmap</option>
           </select>
-        </div>
-        <div class="field">
-          <label>Fecha programada</label>
-          <input type="date" id="f-fecha_programada" />
-        </div>
-      </div>
-
-      <div class="form-row three">
-        <div class="field">
-          <label>Codigo EDS</label>
-          <input type="text" id="f-codigo_unico" placeholder="EDS3265" />
-        </div>
-        <div class="field">
-          <label>Regional</label>
-          <input type="text" id="f-regional" placeholder="ANTIOQUIA" />
-        </div>
-        <div class="field">
-          <label>Estado cronograma</label>
-          <select id="f-cronograma_estado">
-            <option value="">Sin programar</option>
-            <option value="Programada">Programada</option>
-            <option value="En progreso">En progreso</option>
-            <option value="Completa">Completa</option>
-            <option value="Reprogramada">Reprogramada</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="form-row">
-        <div class="field">
-          <label>Nombre EDS</label>
-          <input type="text" id="f-nombre_eds" placeholder="EDS TERPEL SABANETA" />
-        </div>
-        <div class="field">
-          <label>Agente</label>
-          <input type="text" id="f-agente" placeholder="ANSIBLE" />
         </div>
       </div>
 
@@ -1789,9 +1770,6 @@ function fixLabel(r) {
   const type = r.fix_tipo ? String(r.fix_tipo).toUpperCase() : 'FIX';
   return isFixRecord(r) ? type : 'Version';
 }
-function isScheduledRecord(r) {
-  return !!(r.fecha_programada || r.codigo_unico || r.nombre_eds || r.cronograma_estado);
-}
 function isScheduleDone(r) {
   return ['completa', 'completada', 'validado'].includes(String(r.cronograma_estado || r.estado || '').toLowerCase());
 }
@@ -1847,6 +1825,7 @@ function normalizeBusiness(value) {
   if (s.includes('MASSER')) return 'MASSER';
   if (s.includes('FRANQ')) return 'FRANQUICIAS';
   if (s.includes('AFILI')) return 'AFILIADA';
+  if (s.includes('INDUSTR')) return 'INDUSTRIAS';
   return s || '—';
 }
 function reportStateLabel(value) {
@@ -1875,9 +1854,11 @@ function computeReportMetrics(rows) {
   }).length;
   const pending = Math.max(total - complete - partial, 0);
   const franquiciadas = rows.filter(r => normalizeBusiness(r.negocio) === 'FRANQUICIAS').length;
+  const afiliadas = rows.filter(r => normalizeBusiness(r.negocio) === 'AFILIADA').length;
   const masser = rows.filter(r => normalizeBusiness(r.negocio) === 'MASSER').length;
+  const industrias = rows.filter(r => normalizeBusiness(r.negocio) === 'INDUSTRIAS').length;
   const avance = total ? Math.round(((complete + (partial * 0.5)) / total) * 100) : 0;
-  return { total, complete, partial, pending, franquiciadas, masser, avance };
+  return { total, complete, partial, pending, franquiciadas, afiliadas, masser, industrias, avance };
 }
 function saveReportTemplateState() {
   try {
@@ -2435,8 +2416,7 @@ async function loadRecords() {
 }
 
 const OPTIONAL_UPDATE_FIELDS = [
-  'tipo_registro','fix_tipo','fecha_programada','codigo_unico','regional',
-  'cronograma_estado','nombre_eds','agente'
+  'tipo_registro','fix_tipo'
 ];
 
 function withoutOptionalUpdateFields(payload) {
@@ -2551,7 +2531,9 @@ function renderReports() {
   document.getElementById('report-pendientes').textContent = metrics.pending;
   document.getElementById('report-parciales').textContent = metrics.partial;
   document.getElementById('report-franquiciadas').textContent = metrics.franquiciadas;
+  document.getElementById('report-afiliadas').textContent = metrics.afiliadas;
   document.getElementById('report-masser').textContent = metrics.masser;
+  document.getElementById('report-industrias').textContent = metrics.industrias;
   document.getElementById('report-avance').textContent = `${metrics.avance}%`;
   document.getElementById('report-count').textContent = reportTemplateRows.length
     ? `${metrics.total} filas en plantilla`
@@ -2811,12 +2793,6 @@ function openEdit(id) {
   document.getElementById('f-fecha').value            = rec.fecha            || '';
   document.getElementById('f-tipo_registro').value    = rec.tipo_registro    || (isFixRecord(rec) ? 'FIX' : 'Version');
   document.getElementById('f-fix_tipo').value         = rec.fix_tipo         || '';
-  document.getElementById('f-fecha_programada').value = rec.fecha_programada || '';
-  document.getElementById('f-codigo_unico').value     = rec.codigo_unico     || '';
-  document.getElementById('f-regional').value         = rec.regional         || '';
-  document.getElementById('f-cronograma_estado').value= rec.cronograma_estado|| '';
-  document.getElementById('f-nombre_eds').value       = rec.nombre_eds       || '';
-  document.getElementById('f-agente').value           = rec.agente           || '';
   document.getElementById('f-responsable').value      = rec.responsable      || '';
   document.getElementById('f-estado').value           = rec.estado           || 'Pendiente';
   document.getElementById('f-scripts_add').value      = rec.scripts_add      || '';
@@ -2833,14 +2809,12 @@ function openEdit(id) {
 
 function resetForm() {
   ['f-version_anterior','f-version_nueva','f-fecha','f-responsable',
-   'f-fecha_programada','f-codigo_unico','f-regional','f-nombre_eds','f-agente',
    'f-scripts_add','f-scripts_upd','f-script_ap','f-bat','f-adicionales','f-notas'].forEach(id => {
     document.getElementById(id).value = '';
   });
   document.getElementById('f-estado').value = 'Pendiente';
   document.getElementById('f-tipo_registro').value = 'Version';
   document.getElementById('f-fix_tipo').value = '';
-  document.getElementById('f-cronograma_estado').value = '';
   document.querySelectorAll('.check-item input[type="checkbox"]').forEach(cb => { cb.checked = false; cb.closest('.check-item').classList.remove('checked'); });
   document.querySelectorAll('.val-item input[type="checkbox"]').forEach(cb => { cb.checked = false; cb.closest('.val-item').classList.remove('ok'); });
 }
@@ -2856,12 +2830,6 @@ document.getElementById('modal-save').addEventListener('click', async () => {
     fecha:            document.getElementById('f-fecha').value || null,
     tipo_registro:    document.getElementById('f-tipo_registro').value,
     fix_tipo:         document.getElementById('f-fix_tipo').value || null,
-    fecha_programada: document.getElementById('f-fecha_programada').value || null,
-    codigo_unico:     document.getElementById('f-codigo_unico').value.trim(),
-    regional:         document.getElementById('f-regional').value.trim(),
-    cronograma_estado:document.getElementById('f-cronograma_estado').value,
-    nombre_eds:       document.getElementById('f-nombre_eds').value.trim(),
-    agente:           document.getElementById('f-agente').value.trim(),
     responsable:      document.getElementById('f-responsable').value.trim(),
     estado:           document.getElementById('f-estado').value,
     core_types:       getChecked('core_types'),
@@ -2920,11 +2888,6 @@ function openDetail(id) {
         <span class="detail-label">Tipo</span>
         <span class="detail-value"><span class="badge ${isFixRecord(r) ? 'fix' : 'validado'}"><span class="badge-dot ${isFixRecord(r) ? 'fix' : 'validado'}"></span>${esc(fixLabel(r))}</span></span>
       </div>
-      ${isScheduledRecord(r) ? `
-      <div class="detail-row">
-        <span class="detail-label">Cronograma</span>
-        <span class="detail-value">${esc(r.codigo_unico || '')} ${esc(r.nombre_eds || '')} ${esc(r.regional || '')}<br><span class="date-cell">Programada: ${fmtDate(r.fecha_programada)} · Estado: ${esc(r.cronograma_estado || '—')} · Agente: ${esc(r.agente || '—')}</span></span>
-      </div>` : ''}
       <div class="detail-row">
         <span class="detail-label">Responsable</span>
         <span class="detail-value">${esc(r.responsable||'–')}</span>
