@@ -468,6 +468,26 @@
       width: 100%; border-collapse: collapse;
       font-size: .84rem; min-width: 860px;
     }
+    #main-content-section .table-scroll table {
+      min-width: 1180px;
+    }
+    #compiled-section .table-scroll table {
+      min-width: 1040px;
+    }
+    #main-content-section th:last-child,
+    #main-content-section td:last-child,
+    #compiled-section th:last-child,
+    #compiled-section td:last-child {
+      position: sticky;
+      right: 0;
+      background: var(--c-surface);
+      z-index: 1;
+      box-shadow: -10px 0 14px -14px rgba(0,0,0,.35);
+    }
+    #main-content-section th:last-child,
+    #compiled-section th:last-child {
+      z-index: 2;
+    }
     thead { background: var(--c-bg); }
     th {
       padding: .75rem 1rem;
@@ -524,13 +544,14 @@
     .responsible { font-weight: 500; }
 
     /* ROW ACTIONS */
-    .row-actions { display: flex; gap: .4rem; }
+    .row-actions { display: flex; gap: .4rem; flex-wrap: nowrap; justify-content: flex-end; }
     .btn-icon {
       width: 30px; height: 30px; border-radius: 8px;
       display: flex; align-items: center; justify-content: center;
       border: 1px solid var(--c-border);
       color: var(--c-muted);
       transition: all var(--transition);
+      flex: 0 0 auto;
     }
     .btn-icon:hover.edit { background: var(--c-blue); color: white; border-color: var(--c-blue); }
     .btn-icon:hover.delete { background: var(--c-danger); color: white; border-color: var(--c-danger); }
@@ -2084,18 +2105,31 @@ document.getElementById('sidebar-logout').addEventListener('click', async () => 
 });
 
 // Submenu toggles
+function closeSidebarSubmenus(exceptId) {
+  ['submenu-versiones', 'submenu-fix', 'submenu-compilados'].forEach(id => {
+    const submenu = document.getElementById(id);
+    const menuItem = document.getElementById(id.replace('submenu-', 'menu-'));
+    if (!submenu || !menuItem) return;
+    const keepOpen = exceptId && id === exceptId;
+    submenu.classList.toggle('open', keepOpen);
+    menuItem.classList.toggle('open', keepOpen);
+  });
+}
+
 document.getElementById('menu-versiones').addEventListener('click', () => {
   const submenu = document.getElementById('submenu-versiones');
   const menuItem = document.getElementById('menu-versiones');
-  submenu.classList.toggle('open');
-  menuItem.classList.toggle('open');
+  const shouldOpen = !submenu.classList.contains('open');
+  closeSidebarSubmenus(shouldOpen ? 'submenu-versiones' : null);
+  showSection('main-content-section');
+  setActiveMenu('dashboard');
 });
 
 document.getElementById('menu-fix').addEventListener('click', () => {
   const submenu = document.getElementById('submenu-fix');
   const menuItem = document.getElementById('menu-fix');
-  submenu.classList.toggle('open');
-  menuItem.classList.toggle('open');
+  const shouldOpen = !submenu.classList.contains('open');
+  closeSidebarSubmenus(shouldOpen ? 'submenu-fix' : null);
   activeFixFilter = 'fix';
   activeFilter = 'todas';
   showSection('main-content-section');
@@ -2112,8 +2146,8 @@ document.getElementById('menu-fix').addEventListener('click', () => {
 document.getElementById('menu-compilados').addEventListener('click', () => {
   const submenu = document.getElementById('submenu-compilados');
   const menuItem = document.getElementById('menu-compilados');
-  submenu.classList.toggle('open');
-  menuItem.classList.toggle('open');
+  const shouldOpen = !submenu.classList.contains('open');
+  closeSidebarSubmenus(shouldOpen ? 'submenu-compilados' : null);
   // Show compilados section
   showSection('compilados-section');
   setActiveMenu(null);
@@ -3028,6 +3062,25 @@ function init() {
 /* ════════════════════════════════════════
    COMPILED FILES MANAGEMENT
 ════════════════════════════════════════ */
+function isMissingCompiledTableError(error) {
+  const msg = String((error && error.message) || error || '').toLowerCase();
+  return msg.includes('not found') || msg.includes('does not exist') || msg.includes('404') || msg.includes('relation');
+}
+
+function renderCompiledMissingState(message) {
+  const tbody = document.getElementById('compiled-body');
+  if (tbody) {
+    tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state">
+      <div class="empty-title">Falta crear la tabla de compilados</div>
+      <div class="empty-sub">${esc(message || 'Crea la tabla public.compilados en Supabase para listar y subir archivos.')}</div>
+    </div></td></tr>`;
+  }
+  const count = document.getElementById('compiled-count');
+  if (count) count.textContent = 'Tabla pendiente';
+  const menuCount = document.getElementById('count-compilados');
+  if (menuCount) menuCount.textContent = '0';
+}
+
 async function loadCompiledFiles() {
   setCompiledTableLoading();
   const { data, error } = await sb
@@ -3036,6 +3089,11 @@ async function loadCompiledFiles() {
     .order('created_at', { ascending: false });
 
   if (error) {
+    if (isMissingCompiledTableError(error)) {
+      renderCompiledMissingState('Falta crear la tabla public.compilados en Supabase.');
+      toast('Falta la tabla compilados en Supabase', 'error');
+      return;
+    }
     toast('Error al cargar compilados: ' + error.message, 'error');
     return;
   }
@@ -3190,6 +3248,10 @@ document.getElementById('upload-modal-save').addEventListener('click', async () 
     .upload(newFileName, currentCompiledFile);
   
   if (uploadError) {
+    if (isMissingCompiledTableError(uploadError)) {
+      toast('Falta la tabla compilados en Supabase', 'error');
+      return;
+    }
     toast('Error al subir archivo: ' + uploadError.message, 'error');
     return;
   }
@@ -3209,6 +3271,10 @@ document.getElementById('upload-modal-save').addEventListener('click', async () 
   }]);
   
   if (dbError) {
+    if (isMissingCompiledTableError(dbError)) {
+      toast('Falta la tabla compilados en Supabase', 'error');
+      return;
+    }
     toast('Error al guardar metadata: ' + dbError.message, 'error');
     return;
   }
