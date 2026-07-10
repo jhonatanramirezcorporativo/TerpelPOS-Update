@@ -1678,7 +1678,13 @@ const SUPABASE_URL = 'https://zlcqffnhccsqqjcvjijn.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpsY3FmZm5oY2NzcXFqY3ZqaWpuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNzMzMDAsImV4cCI6MjA5Njg0OTMwMH0.xWw1lOInND8tP8Dej9iQMGDpXqzn5XHBLodzVUZz8W0'; // <-- reemplaza aquí
 
 const { createClient } = supabase;
-const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true
+  }
+});
 
 /* ════════════════════════════════════════
    CONSTANTS
@@ -1992,15 +1998,31 @@ function itemExists(category, name) {
 ════════════════════════════════════════ */
 async function initAuth() {
   try {
+    const url = new URL(window.location.href);
+    const code = url.searchParams.get('code');
+    if (code) {
+      const { error: exchangeError } = await sb.auth.exchangeCodeForSession(code);
+      if (exchangeError) throw exchangeError;
+      url.searchParams.delete('code');
+      url.searchParams.delete('state');
+      window.history.replaceState({}, document.title, url.pathname + url.search + url.hash);
+    }
+
     const { data: { session } } = await sb.auth.getSession();
     if (session) {
       setUser(session.user);
     } else {
-      showLogin();
+      if (!new URL(window.location.href).searchParams.get('code')) {
+        showLogin();
+      }
     }
     sb.auth.onAuthStateChange((_ev, sess) => {
-      if (sess) { setUser(sess.user); }
-      else      { showLogin(); }
+      const hasCode = new URL(window.location.href).searchParams.get('code');
+      if (sess) {
+        setUser(sess.user).catch(err => console.error('setUser failed', err));
+      } else if (!hasCode) {
+        showLogin();
+      }
     });
   } catch (err) {
     console.error('Auth init failed', err);
@@ -2054,9 +2076,12 @@ function showApp() {
 }
 
 document.getElementById('btn-google-login').addEventListener('click', async () => {
+  const redirectTo = window.location.origin && window.location.origin !== 'null'
+    ? window.location.origin + window.location.pathname
+    : location.href;
   const { error } = await sb.auth.signInWithOAuth({
     provider: 'google',
-    options: { redirectTo: location.href }
+    options: { redirectTo }
   });
   if (error) toast('Error al iniciar sesión: ' + error.message, 'error');
 });
@@ -3012,12 +3037,6 @@ function init() {
   buildValGrid();
   restoreReportTemplateState();
   setActiveMenu('dashboard');
-  setTimeout(() => {
-    const loading = document.getElementById('app-loading');
-    if (loading && getComputedStyle(loading).display !== 'none') {
-      showLogin();
-    }
-  }, 1500);
   // Start auth
   initAuth();
 }
