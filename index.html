@@ -2010,12 +2010,12 @@ async function setUser(user) {
   currentUser = user;
   const topbarName = document.getElementById('user-name-display');
   const topbarEmail = document.getElementById('user-email-display');
-  if (topbarName) topbarName.textContent = user.user_metadata?.full_name || user.email;
+  if (topbarName) topbarName.textContent = (user.user_metadata && user.user_metadata.full_name) || user.email;
   if (topbarEmail) topbarEmail.textContent = user.email;
 
   const av = document.getElementById('user-avatar');
   if (av) {
-    if (user.user_metadata?.avatar_url) {
+    if (user.user_metadata && user.user_metadata.avatar_url) {
       av.innerHTML = `<img src="${user.user_metadata.avatar_url}" alt="" />`;
     } else {
       av.textContent = (user.email || '?')[0].toUpperCase();
@@ -2023,9 +2023,9 @@ async function setUser(user) {
   }
   
   // Update sidebar
-  document.getElementById('sidebar-name').textContent = user.user_metadata?.full_name || user.email;
+  document.getElementById('sidebar-name').textContent = (user.user_metadata && user.user_metadata.full_name) || user.email;
   const sidebarAvatar = document.getElementById('sidebar-avatar');
-  if (user.user_metadata?.avatar_url) {
+  if (user.user_metadata && user.user_metadata.avatar_url) {
     sidebarAvatar.innerHTML = `<img src="${user.user_metadata.avatar_url}" alt="" />`;
   } else {
     sidebarAvatar.textContent = (user.email || '?')[0].toUpperCase();
@@ -2100,7 +2100,8 @@ document.getElementById('menu-fix').addEventListener('click', () => {
   activeFilter = 'todas';
   showSection('main-content-section');
   document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
-  document.querySelector('.filter-tab[data-filter="todas"]')?.classList.add('active');
+  var defaultTabFix = document.querySelector('.filter-tab[data-filter="todas"]');
+  if (defaultTabFix) defaultTabFix.classList.add('active');
   document.querySelectorAll('[data-fix-filter]').forEach(b => b.style.fontWeight = 'normal');
   const defaultFix = document.querySelector('[data-fix-filter="fix"]');
   if (defaultFix) defaultFix.style.fontWeight = '700';
@@ -2142,7 +2143,8 @@ document.querySelectorAll('[data-fix-filter]').forEach(btn => {
     showSection('main-content-section');
     setActiveMenu('dashboard');
     document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
-    document.querySelector('.filter-tab[data-filter="todas"]')?.classList.add('active');
+    var defaultTabVersion = document.querySelector('.filter-tab[data-filter="todas"]');
+    if (defaultTabVersion) defaultTabVersion.classList.add('active');
     document.querySelectorAll('[data-fix-filter]').forEach(b => b.style.fontWeight = 'normal');
     e.currentTarget.style.fontWeight = '700';
     renderAll();
@@ -2194,17 +2196,21 @@ document.getElementById('report-template-input').addEventListener('change', asyn
 
 document.getElementById('report-template-clear').addEventListener('click', clearReportTemplate);
 
-document.getElementById('settings-clear-template')?.addEventListener('click', clearReportTemplate);
-document.getElementById('settings-open-dashboard')?.addEventListener('click', () => {
+var settingsClearBtn = document.getElementById('settings-clear-template');
+if (settingsClearBtn) settingsClearBtn.addEventListener('click', clearReportTemplate);
+var settingsOpenDashboardBtn = document.getElementById('settings-open-dashboard');
+if (settingsOpenDashboardBtn) settingsOpenDashboardBtn.addEventListener('click', () => {
   showSection('main-content-section');
   setActiveMenu('dashboard');
 });
-document.getElementById('settings-open-reports')?.addEventListener('click', () => {
+var settingsOpenReportsBtn = document.getElementById('settings-open-reports');
+if (settingsOpenReportsBtn) settingsOpenReportsBtn.addEventListener('click', () => {
   showSection('reports-section');
   setActiveMenu('reports');
   renderReports();
 });
-document.getElementById('settings-open-compiled')?.addEventListener('click', () => {
+var settingsOpenCompiledBtn = document.getElementById('settings-open-compiled');
+if (settingsOpenCompiledBtn) settingsOpenCompiledBtn.addEventListener('click', () => {
   showSection('compilados-section');
   setActiveMenu(null);
   loadCompiledFiles();
@@ -2278,7 +2284,7 @@ function updateSidebarCounters() {
 â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 async function loadCurrentRole() {
   currentRole = 'lectura';
-  const email = currentUser?.email;
+  const email = currentUser && currentUser.email;
   if (!email) return;
 
   const { data, error } = await sb
@@ -2291,7 +2297,7 @@ async function loadCurrentRole() {
     toast('No se pudo validar el rol: ' + error.message, 'error');
     return;
   }
-  currentRole = data?.rol || (email.toLowerCase() === 'edgarrr481@gmail.com' ? 'admin' : 'lectura');
+  currentRole = (data && data.rol) || (email.toLowerCase() === 'edgarrr481@gmail.com' ? 'admin' : 'lectura');
 }
 
 async function loadUsersRoles() {
@@ -2327,7 +2333,7 @@ async function saveUserRole() {
 
 async function deleteUserRole(id, email) {
   if (!isAdmin()) { toast('Solo admins pueden eliminar usuarios', 'error'); return; }
-  if (email && currentUser?.email?.toLowerCase() === email.toLowerCase()) {
+  if (email && currentUser && currentUser.email && currentUser.email.toLowerCase() === email.toLowerCase()) {
     toast('No puedes eliminar tu propio rol desde aquÃ­', 'error');
     return;
   }
@@ -2406,7 +2412,7 @@ function withoutOptionalUpdateFields(payload) {
 }
 
 function isMissingColumnError(error) {
-  const msg = String(error?.message || error || '').toLowerCase();
+  const msg = String((error && error.message) || error || '').toLowerCase();
   return msg.includes('column') && (msg.includes('does not exist') || msg.includes('could not find'));
 }
 
@@ -2441,7 +2447,7 @@ async function saveRecord(payload) {
     toast('Cambios guardados âœ“');
   } else {
     payload.usuario_email  = currentUser.email;
-    payload.usuario_nombre = currentUser.user_metadata?.full_name || currentUser.email;
+    payload.usuario_nombre = (currentUser.user_metadata && currentUser.user_metadata.full_name) || currentUser.email;
     payload.created_at     = new Date().toISOString();
     let { error } = await sb.from('actualizaciones').insert([payload]);
     if (error && isMissingColumnError(error)) {
@@ -3196,7 +3202,7 @@ document.getElementById('upload-modal-save').addEventListener('click', async () 
     tamaÃ±o: currentCompiledFile.size,
     ruta_almacenamiento: newFileName,
     usuario_email: currentUser.email,
-    usuario_nombre: currentUser.user_metadata?.full_name || currentUser.email,
+    usuario_nombre: (currentUser.user_metadata && currentUser.user_metadata.full_name) || currentUser.email,
     notas: notas,
     descargas: 0,
     created_at: new Date().toISOString()
