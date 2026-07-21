@@ -13,18 +13,18 @@
        DESIGN TOKENS
     ───────────────────────────────────────── */
     :root {
-      --c-bg:       #f6f3ef;
+      --c-bg:       #fafafa;
       --c-surface:  #ffffff;
-      --c-border:   #e7ded4;
-      --c-text:     #25211d;
-      --c-muted:    #cacac9;
-      --c-accent:   #ff2f00;       /* Terpel rojo suave */
-      --c-accent2:  #dfdcd7;       /* Amarillo Terpel suave */
-      --c-green:    #5a8f70;
-      --c-yellow:   #be8d34;
+      --c-border:   #ececec;
+      --c-text:     #1c1a19;
+      --c-muted:    #6b6560;
+      --c-accent:   #e4032b;       /* Terpel rojo */
+      --c-accent2:  #ffc629;       /* Terpel amarillo */
+      --c-green:    #4c9a6a;
+      --c-yellow:   #d69e2e;
       --c-blue:     #4d7890;
       --c-purple:   #7b6a97;
-      --c-danger:   #a94132;
+      --c-danger:   #d7263d;
       --c-orange:   #c66b28;
       --c-shadow:   0 1px 3px rgba(0,0,0,.08), 0 4px 16px rgba(0,0,0,.06);
       --c-shadow-lg:0 8px 32px rgba(0,0,0,.12);
@@ -37,22 +37,22 @@
 
     @media (prefers-color-scheme: dark) {
       :root:not([data-theme="light"]) {
-        --c-bg:      #e6e1dd;
-        --c-surface: #ca5242;
-        --c-border:  #dd4024;
-        --c-text:    #f4eee7;
-        --c-muted:   #b0a69c;
+        --c-bg:      #1c1211;
+        --c-surface: #271b19;
+        --c-border:  #3d2b28;
+        --c-text:    #f7f0ec;
+        --c-muted:   #c9beb8;
         --c-shadow:  0 1px 3px rgba(0,0,0,.4), 0 4px 16px rgba(0,0,0,.3);
         --c-shadow-lg:0 8px 32px rgba(0,0,0,.5);
       }
     }
     /* Manual override (set via Configuración > Apariencia), wins over OS preference */
     :root[data-theme="dark"] {
-      --c-bg:      #191613;
-      --c-surface: #24201c;
-      --c-border:  #3a332d;
-      --c-text:    #f4eee7;
-      --c-muted:   #b0a69c;
+      --c-bg:      #1c1211;
+      --c-surface: #271b19;
+      --c-border:  #3d2b28;
+      --c-text:    #f7f0ec;
+      --c-muted:   #c9beb8;
       --c-shadow:  0 1px 3px rgba(0,0,0,.4), 0 4px 16px rgba(0,0,0,.3);
       --c-shadow-lg:0 8px 32px rgba(0,0,0,.5);
     }
@@ -147,7 +147,7 @@
     }
     .btn-google:hover {
       border-color: var(--c-accent);
-      box-shadow: 0 0 0 3px rgba(173,68,45,.1);
+      box-shadow: 0 0 0 3px rgba(228,3,43,.1);
       transform: translateY(-1px);
     }
     .btn-google svg { flex-shrink: 0; }
@@ -230,7 +230,7 @@
     }
     .sidebar-search-input:focus {
       border-color: var(--c-accent);
-      box-shadow: 0 0 0 2px rgba(173,68,45,.08);
+      box-shadow: 0 0 0 2px rgba(228,3,43,.08);
     }
 
     /* SIDEBAR MENU */
@@ -265,11 +265,11 @@
       color: var(--c-accent);
     }
     .sidebar-menu-item.active {
-      background: rgba(184,50,24,.08);
+      background: rgba(196,2,36,.08);
       color: var(--c-accent);
     }
     .sidebar-menu-item.open {
-      background: rgba(173,68,45,.08);
+      background: rgba(228,3,43,.08);
       color: var(--c-accent);
     }
     .sidebar-menu-item-icon {
@@ -324,9 +324,9 @@
       display: flex; align-items: center; gap: 1rem;
     }
     @media (prefers-color-scheme: dark) {
-      html:not([data-theme="light"]) .topbar { background: rgba(26,26,30,.88); }
+      html:not([data-theme="light"]) .topbar { background: rgba(28,18,17,.9); }
     }
-    html[data-theme="dark"] .topbar { background: rgba(26,26,30,.88); }
+    html[data-theme="dark"] .topbar { background: rgba(28,18,17,.9); }
     @media (max-width: 1024px) {
       .sidebar { display: none; }
       .app-wrapper { margin-left: 0; }
@@ -454,7 +454,7 @@
       font-size: .875rem; color: var(--c-text);
       outline: none; transition: border-color var(--transition), box-shadow var(--transition);
     }
-    .search-input:focus { border-color: var(--c-accent); box-shadow: 0 0 0 3px rgba(173,68,45,.1); }
+    .search-input:focus { border-color: var(--c-accent); box-shadow: 0 0 0 3px rgba(228,3,43,.1); }
     .filter-tabs { display: flex; gap: .35rem; flex-wrap: wrap; }
     .filter-tab {
       padding: .45rem .9rem; border-radius: 20px;
@@ -662,7 +662,7 @@
     }
     .field input:focus, .field select:focus, .field textarea:focus {
       border-color: var(--c-accent);
-      box-shadow: 0 0 0 3px rgba(173,68,45,.1);
+      box-shadow: 0 0 0 3px rgba(228,3,43,.1);
       background: var(--c-surface);
     }
     .field textarea { resize: vertical; min-height: 80px; }
@@ -695,7 +695,7 @@
     }
     .check-item:hover { border-color: var(--c-accent); }
     .check-item input[type="checkbox"] { accent-color: var(--c-accent); }
-    .check-item.checked { border-color: var(--c-accent); background: rgba(173,68,45,.05); }
+    .check-item.checked { border-color: var(--c-accent); background: rgba(228,3,43,.05); }
     .check-item.custom { padding-right: .35rem; }
     .check-item.custom .custom-delete {
       margin-left: auto;
@@ -845,7 +845,7 @@
     }
     .upload-drop-zone:hover, .upload-drop-zone.dragover {
       border-color: var(--c-accent);
-      background: rgba(173,68,45,.05);
+      background: rgba(228,3,43,.05);
     }
     .upload-drop-icon { font-size: 2.5rem; margin-bottom: .5rem; }
     .upload-drop-text { color: var(--c-muted); font-size: .85rem; margin-top: .5rem; }
@@ -967,7 +967,7 @@
     .btn-secondary-soft:hover {
       border-color: var(--c-accent);
       color: var(--c-accent);
-      background: rgba(184,50,24,.04);
+      background: rgba(196,2,36,.04);
     }
 
     /* SETTINGS TABS */
@@ -1924,7 +1924,7 @@ const THEME_KEY = 'terpelpos.theme.v1';
 const NOTIFICATIONS_KEY = 'terpelpos.notifications.v1';
 
 function getStoredTheme() {
-  try { return localStorage.getItem(THEME_KEY) || 'auto'; } catch { return 'auto'; }
+  try { return localStorage.getItem(THEME_KEY) || 'light'; } catch { return 'light'; }
 }
 function applyTheme(pref) {
   const root = document.documentElement;
