@@ -36,7 +36,7 @@
     }
 
     @media (prefers-color-scheme: dark) {
-      :root {
+      :root:not([data-theme="light"]) {
         --c-bg:      #191613;
         --c-surface: #24201c;
         --c-border:  #3a332d;
@@ -45,6 +45,16 @@
         --c-shadow:  0 1px 3px rgba(0,0,0,.4), 0 4px 16px rgba(0,0,0,.3);
         --c-shadow-lg:0 8px 32px rgba(0,0,0,.5);
       }
+    }
+    /* Manual override (set via Configuración > Apariencia), wins over OS preference */
+    :root[data-theme="dark"] {
+      --c-bg:      #191613;
+      --c-surface: #24201c;
+      --c-border:  #3a332d;
+      --c-text:    #f4eee7;
+      --c-muted:   #b0a69c;
+      --c-shadow:  0 1px 3px rgba(0,0,0,.4), 0 4px 16px rgba(0,0,0,.3);
+      --c-shadow-lg:0 8px 32px rgba(0,0,0,.5);
     }
 
     /* ─────────────────────────────────────────
@@ -164,8 +174,9 @@
       box-shadow: -1px 0 3px rgba(0,0,0,.08);
     }
     @media (prefers-color-scheme: dark) {
-      .sidebar { box-shadow: -1px 0 3px rgba(0,0,0,.3); }
+      html:not([data-theme="light"]) .sidebar { box-shadow: -1px 0 3px rgba(0,0,0,.3); }
     }
+    html[data-theme="dark"] .sidebar { box-shadow: -1px 0 3px rgba(0,0,0,.3); }
 
     /* SIDEBAR PROFILE SECTION */
     .sidebar-profile {
@@ -313,8 +324,9 @@
       display: flex; align-items: center; gap: 1rem;
     }
     @media (prefers-color-scheme: dark) {
-      .topbar { background: rgba(26,26,30,.88); }
+      html:not([data-theme="light"]) .topbar { background: rgba(26,26,30,.88); }
     }
+    html[data-theme="dark"] .topbar { background: rgba(26,26,30,.88); }
     @media (max-width: 1024px) {
       .sidebar { display: none; }
       .app-wrapper { margin-left: 0; }
@@ -527,12 +539,17 @@
     .badge.validado    { background: #f3e8ff; color: #4c1d95; }
     .badge.fix         { background: #f7e6d0; color: #7c2d12; }
     @media (prefers-color-scheme: dark) {
-      .badge.pendiente   { background: rgba(234,179,8,.15); color: #fde047; }
-      .badge.en-progreso { background: rgba(59,130,246,.15); color: #93c5fd; }
-      .badge.completada  { background: rgba(34,197,94,.15); color: #86efac; }
-      .badge.validado    { background: rgba(124,58,237,.15); color: #c4b5fd; }
-      .badge.fix         { background: rgba(232,162,58,.16); color: #f6c96d; }
+      html:not([data-theme="light"]) .badge.pendiente   { background: rgba(234,179,8,.15); color: #fde047; }
+      html:not([data-theme="light"]) .badge.en-progreso { background: rgba(59,130,246,.15); color: #93c5fd; }
+      html:not([data-theme="light"]) .badge.completada  { background: rgba(34,197,94,.15); color: #86efac; }
+      html:not([data-theme="light"]) .badge.validado    { background: rgba(124,58,237,.15); color: #c4b5fd; }
+      html:not([data-theme="light"]) .badge.fix         { background: rgba(232,162,58,.16); color: #f6c96d; }
     }
+    html[data-theme="dark"] .badge.pendiente   { background: rgba(234,179,8,.15); color: #fde047; }
+    html[data-theme="dark"] .badge.en-progreso { background: rgba(59,130,246,.15); color: #93c5fd; }
+    html[data-theme="dark"] .badge.completada  { background: rgba(34,197,94,.15); color: #86efac; }
+    html[data-theme="dark"] .badge.validado    { background: rgba(124,58,237,.15); color: #c4b5fd; }
+    html[data-theme="dark"] .badge.fix         { background: rgba(232,162,58,.16); color: #f6c96d; }
     .badge-dot.pendiente   { background: #f59e0b; }
     .badge-dot.en-progreso { background: #3b82f6; }
     .badge-dot.completada  { background: #22c55e; }
@@ -952,6 +969,93 @@
       color: var(--c-accent);
       background: rgba(184,50,24,.04);
     }
+
+    /* SETTINGS TABS */
+    .settings-tabs {
+      display: flex; flex-wrap: wrap; gap: .25rem;
+      background: var(--c-surface);
+      border: 1px solid var(--c-border);
+      border-radius: var(--r);
+      padding: .3rem;
+      margin-top: 1rem;
+      width: fit-content;
+      max-width: 100%;
+    }
+    .settings-tab {
+      display: inline-flex; align-items: center; gap: .4rem;
+      padding: .55rem 1.05rem;
+      border-radius: calc(var(--r) - 5px);
+      font-size: .85rem; font-weight: 600;
+      color: var(--c-muted);
+      transition: background var(--transition), color var(--transition);
+      white-space: nowrap;
+    }
+    .settings-tab:hover { color: var(--c-text); }
+    .settings-tab.active { background: var(--c-accent); color: #fff; }
+    .settings-tab svg { flex-shrink: 0; }
+    .settings-tabpanel { margin-top: 1rem; }
+
+    /* PROFILE CARD */
+    .profile-row { display: flex; align-items: center; gap: .85rem; margin-bottom: .9rem; }
+    .settings-avatar {
+      width: 52px; height: 52px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--c-accent), var(--c-accent2));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.15rem; font-weight: 700; color: #fff;
+      overflow: hidden; flex-shrink: 0;
+    }
+    .settings-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .profile-info { min-width: 0; }
+    .profile-name { font-weight: 700; font-size: .98rem; letter-spacing: -.01em; }
+    .profile-email { color: var(--c-muted); font-size: .82rem; }
+
+    /* SEGMENTED CONTROL (theme switch) */
+    .segmented {
+      display: inline-flex; gap: .2rem;
+      background: var(--c-bg);
+      border: 1px solid var(--c-border);
+      border-radius: 999px;
+      padding: .2rem;
+      margin-top: .5rem;
+    }
+    .segmented-btn {
+      padding: .42rem .95rem;
+      border-radius: 999px;
+      font-size: .8rem; font-weight: 600;
+      color: var(--c-muted);
+      transition: background var(--transition), color var(--transition);
+    }
+    .segmented-btn:hover { color: var(--c-text); }
+    .segmented-btn.active { background: var(--c-accent); color: #fff; }
+
+    /* SWITCH TOGGLE */
+    .switch-row { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+    .switch-row-title { font-size: .88rem; font-weight: 600; margin-bottom: .2rem; }
+    .switch { position: relative; display: inline-block; width: 40px; height: 22px; flex-shrink: 0; }
+    .switch input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; z-index: 1; }
+    .switch-track {
+      position: absolute; inset: 0;
+      background: var(--c-border);
+      border-radius: 999px;
+      transition: background var(--transition);
+    }
+    .switch-thumb {
+      position: absolute; top: 2px; left: 2px;
+      width: 18px; height: 18px; border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 1px 2px rgba(0,0,0,.25);
+      transition: transform var(--transition);
+    }
+    .switch input:checked + .switch-track { background: var(--c-accent); }
+    .switch input:checked + .switch-track .switch-thumb { transform: translateX(18px); }
+    .switch input:focus-visible + .switch-track { outline: 2px solid var(--c-accent); outline-offset: 2px; }
+
+    /* LOCKED / ADMIN NOTE */
+    .settings-locked-note {
+      display: flex; align-items: center; gap: .5rem;
+      color: var(--c-muted); font-size: .84rem;
+      padding: 1rem;
+    }
     @media (max-width: 760px) {
       .admin-form { grid-template-columns: 1fr; }
     }
@@ -1093,7 +1197,6 @@
       </div>
       <div class="topbar-user">
         <span class="role-pill" id="role-display">Lectura</span>
-        <button class="btn-admin admin-only" id="btn-toggle-users" type="button">Usuarios</button>
         <button class="btn-logout" id="btn-logout">Cerrar sesión</button>
       </div>
     </header>
@@ -1182,40 +1285,6 @@
         <span id="records-count">Cargando…</span>
       </div>
     </div>
-
-    <section class="admin-panel admin-only" id="users-panel" style="display:none">
-      <div class="admin-panel-header">
-        <div>
-          <h3 class="admin-panel-title">Gestión de usuarios</h3>
-          <p class="page-sub">Asigna quién puede editar y quién queda en solo lectura.</p>
-        </div>
-      </div>
-      <div class="admin-form">
-        <input type="email" id="user-role-email" placeholder="correo@empresa.com" />
-        <input type="text" id="user-role-name" placeholder="Nombre" />
-        <select id="user-role-select">
-          <option value="lectura">Solo lectura</option>
-          <option value="admin">Admin</option>
-        </select>
-        <button class="btn btn-primary" id="btn-save-user-role" type="button">Guardar</button>
-      </div>
-      <div class="table-scroll">
-        <table class="users-table">
-          <thead>
-            <tr>
-              <th>Correo</th>
-              <th>Nombre</th>
-              <th>Rol</th>
-              <th>Creado</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody id="users-roles-body">
-            <tr><td colspan="5"><div class="users-empty">Cargando usuarios…</div></td></tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
   </main>
 
   <!-- COMPILADOS SECTION -->
@@ -1357,8 +1426,8 @@
   <main class="page-content" id="settings-section" style="display:none;">
       <div class="page-header">
       <div>
-        <h2 class="page-title">Configuraci�n</h2>
-        <p class="page-sub">Par�metros operativos para reporte, cronograma y acceso r�pido al flujo de trabajo.</p>
+        <h2 class="page-title">Configuración</h2>
+        <p class="page-sub">Preferencias de cuenta, datos del reporte y administración del equipo.</p>
       </div>
       <div class="settings-actions">
         <button class="btn-secondary-soft" id="settings-open-dashboard" type="button">Dashboard</button>
@@ -1367,74 +1436,181 @@
       </div>
     </div>
 
-    <div class="settings-grid">
-      <section class="settings-panel">
-        <div class="settings-panel-head">
-          <div class="settings-panel-title">Plantilla del reporte</div>
-          <span class="data-pill complete"><span class="dot"></span><span id="settings-template-state">Persistente</span></span>
-        </div>
-        <div class="settings-meta">
-          <div class="settings-meta-row">
-            <span class="settings-meta-label">Archivo</span>
-            <span class="settings-meta-value" id="settings-template-name">Sin plantilla cargada</span>
-          </div>
-          <div class="settings-meta-row">
-            <span class="settings-meta-label">Filas</span>
-            <span class="settings-meta-value" id="settings-template-count">0</span>
-          </div>
-          <div class="settings-meta-row">
-            <span class="settings-meta-label">Avance</span>
-            <span class="settings-meta-value" id="settings-template-progress">0%</span>
-          </div>
-        </div>
-        <div class="settings-actions">
-          <button class="btn-secondary-soft" id="settings-clear-template" type="button">Limpiar local</button>
-        </div>
-      </section>
+    <div class="settings-tabs" role="tablist">
+      <button class="settings-tab active" type="button" data-settings-tab="general" role="tab" aria-selected="true">General</button>
+      <button class="settings-tab" type="button" data-settings-tab="datos" role="tab" aria-selected="false">Datos y reportes</button>
+      <button class="settings-tab" type="button" id="settings-tab-admin" data-settings-tab="admin" role="tab" aria-selected="false" style="display:none">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+        Administración
+      </button>
+    </div>
 
-      <section class="settings-panel">
-        <div class="settings-panel-head">
-          <div class="settings-panel-title">Negocios</div>
-        </div>
-        <div class="pill-list">
-          <span class="data-pill franq"><span class="dot"></span>FRANQUICIAS</span>
-          <span class="data-pill masser"><span class="dot"></span>MASSER</span>
-          <span class="data-pill afiliada"><span class="dot"></span>AFILIADA</span>
-        </div>
-        <div class="settings-note">El reporte normaliza estos valores para mantener el avance ordenado y legible.</div>
-      </section>
+    <!-- GENERAL -->
+    <div class="settings-tabpanel" data-settings-panel="general">
+      <div class="settings-grid">
+        <section class="settings-panel">
+          <div class="settings-panel-head">
+            <div class="settings-panel-title">Perfil</div>
+            <span class="role-pill" id="settings-role-pill">Lectura</span>
+          </div>
+          <div class="profile-row">
+            <div class="settings-avatar" id="settings-profile-avatar">?</div>
+            <div class="profile-info">
+              <div class="profile-name" id="settings-profile-name">—</div>
+              <div class="profile-email" id="settings-profile-email">—</div>
+            </div>
+          </div>
+          <div class="settings-note">Tu rol determina qué puedes editar. Solo un admin puede cambiar roles, desde la pestaña Administración.</div>
+        </section>
 
-      <section class="settings-panel">
-        <div class="settings-panel-head">
-          <div class="settings-panel-title">Estados</div>
-        </div>
-        <div class="pill-list">
-          <span class="data-pill pending"><span class="dot"></span>Pendiente</span>
-          <span class="data-pill partial"><span class="dot"></span>Parcial</span>
-          <span class="data-pill complete"><span class="dot"></span>Completa</span>
-        </div>
-        <div class="settings-note">Puedes cambiarlos directo en el reporte; el estado queda guardado en esta sesi�n.</div>
-      </section>
+        <section class="settings-panel">
+          <div class="settings-panel-head">
+            <div class="settings-panel-title">Apariencia</div>
+          </div>
+          <div class="settings-note">Elige cómo se ve la aplicación en este dispositivo.</div>
+          <div class="segmented" id="theme-segmented" role="group" aria-label="Tema">
+            <button type="button" class="segmented-btn" data-theme-choice="auto">Auto</button>
+            <button type="button" class="segmented-btn" data-theme-choice="light">Claro</button>
+            <button type="button" class="segmented-btn" data-theme-choice="dark">Oscuro</button>
+          </div>
+        </section>
 
-      <section class="settings-panel">
-        <div class="settings-panel-head">
-          <div class="settings-panel-title">Resumen r�pido</div>
+        <section class="settings-panel">
+          <div class="settings-panel-head">
+            <div class="settings-panel-title">Notificaciones</div>
+          </div>
+          <div class="switch-row">
+            <div>
+              <div class="switch-row-title">Notificaciones en pantalla</div>
+              <div class="settings-note" style="margin-bottom:0">Avisos al guardar, editar o eliminar registros.</div>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="settings-notifications-toggle" checked />
+              <span class="switch-track"><span class="switch-thumb"></span></span>
+            </label>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <!-- DATOS Y REPORTES -->
+    <div class="settings-tabpanel" data-settings-panel="datos" style="display:none">
+      <div class="settings-grid">
+        <section class="settings-panel">
+          <div class="settings-panel-head">
+            <div class="settings-panel-title">Plantilla del reporte</div>
+            <span class="data-pill complete"><span class="dot"></span><span id="settings-template-state">Persistente</span></span>
+          </div>
+          <div class="settings-meta">
+            <div class="settings-meta-row">
+              <span class="settings-meta-label">Archivo</span>
+              <span class="settings-meta-value" id="settings-template-name">Sin plantilla cargada</span>
+            </div>
+            <div class="settings-meta-row">
+              <span class="settings-meta-label">Filas</span>
+              <span class="settings-meta-value" id="settings-template-count">0</span>
+            </div>
+            <div class="settings-meta-row">
+              <span class="settings-meta-label">Avance</span>
+              <span class="settings-meta-value" id="settings-template-progress">0%</span>
+            </div>
+          </div>
+          <div class="settings-actions">
+            <button class="btn-secondary-soft" id="settings-clear-template" type="button">Limpiar local</button>
+          </div>
+        </section>
+
+        <section class="settings-panel">
+          <div class="settings-panel-head">
+            <div class="settings-panel-title">Exportar datos</div>
+          </div>
+          <div class="settings-note">Descarga todas las actualizaciones visibles como Excel, listo para respaldar o compartir.</div>
+          <div class="settings-actions">
+            <button class="btn-secondary-soft" id="settings-export-records" type="button">Exportar registros (.xlsx)</button>
+          </div>
+        </section>
+
+        <section class="settings-panel">
+          <div class="settings-panel-head">
+            <div class="settings-panel-title">Negocios</div>
+          </div>
+          <div class="pill-list">
+            <span class="data-pill franq"><span class="dot"></span>FRANQUICIAS</span>
+            <span class="data-pill masser"><span class="dot"></span>MASSER</span>
+            <span class="data-pill afiliada"><span class="dot"></span>AFILIADA</span>
+          </div>
+          <div class="settings-note">El reporte normaliza estos valores para mantener el avance ordenado y legible.</div>
+        </section>
+
+        <section class="settings-panel">
+          <div class="settings-panel-head">
+            <div class="settings-panel-title">Estados</div>
+          </div>
+          <div class="pill-list">
+            <span class="data-pill pending"><span class="dot"></span>Pendiente</span>
+            <span class="data-pill partial"><span class="dot"></span>Parcial</span>
+            <span class="data-pill complete"><span class="dot"></span>Completa</span>
+          </div>
+          <div class="settings-note">Puedes cambiarlos directo en el reporte; el estado queda guardado en esta sesión.</div>
+        </section>
+
+        <section class="settings-panel">
+          <div class="settings-panel-head">
+            <div class="settings-panel-title">Resumen rápido</div>
+          </div>
+          <div class="settings-meta">
+            <div class="settings-meta-row">
+              <span class="settings-meta-label">Completas</span>
+              <span class="settings-meta-value" id="settings-complete-count">0</span>
+            </div>
+            <div class="settings-meta-row">
+              <span class="settings-meta-label">Pendientes</span>
+              <span class="settings-meta-value" id="settings-pending-count">0</span>
+            </div>
+            <div class="settings-meta-row">
+              <span class="settings-meta-label">Parciales</span>
+              <span class="settings-meta-value" id="settings-partial-count">0</span>
+            </div>
+          </div>
+          <div class="settings-note">Útil para la revisión antes de mostrar avances o exportar captura.</div>
+        </section>
+      </div>
+    </div>
+
+    <!-- ADMINISTRACIÓN (solo admins, oculto por CSS/JS y protegido por RLS en Supabase) -->
+    <div class="settings-tabpanel" data-settings-panel="admin" style="display:none">
+      <section class="admin-panel">
+        <div class="admin-panel-header">
+          <div>
+            <h3 class="admin-panel-title">Gestión de usuarios</h3>
+            <p class="page-sub">Asigna quién puede editar y quién queda en solo lectura.</p>
+          </div>
         </div>
-        <div class="settings-meta">
-          <div class="settings-meta-row">
-            <span class="settings-meta-label">Completas</span>
-            <span class="settings-meta-value" id="settings-complete-count">0</span>
-          </div>
-          <div class="settings-meta-row">
-            <span class="settings-meta-label">Pendientes</span>
-            <span class="settings-meta-value" id="settings-pending-count">0</span>
-          </div>
-          <div class="settings-meta-row">
-            <span class="settings-meta-label">Parciales</span>
-            <span class="settings-meta-value" id="settings-partial-count">0</span>
-          </div>
+        <div class="admin-form">
+          <input type="email" id="user-role-email" placeholder="correo@empresa.com" />
+          <input type="text" id="user-role-name" placeholder="Nombre" />
+          <select id="user-role-select">
+            <option value="lectura">Solo lectura</option>
+            <option value="admin">Admin</option>
+          </select>
+          <button class="btn btn-primary" id="btn-save-user-role" type="button">Guardar</button>
         </div>
-        <div class="settings-note">�til para la revisi�n antes de mostrar avances o exportar captura.</div>
+        <div class="table-scroll">
+          <table class="users-table">
+            <thead>
+              <tr>
+                <th>Correo</th>
+                <th>Nombre</th>
+                <th>Rol</th>
+                <th>Creado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="users-roles-body">
+              <tr><td colspan="5"><div class="users-empty">Cargando usuarios…</div></td></tr>
+            </tbody>
+          </table>
+        </div>
       </section>
     </div>
   </main>
@@ -1742,6 +1918,36 @@ const REPORT_TEMPLATE_STORAGE_KEY = 'terpelpos.reportTemplateRows.v1';
 const REPORT_TEMPLATE_NAME_KEY = 'terpelpos.reportTemplateName.v1';
 
 /* ════════════════════════════════════════
+   PREFERENCIAS (tema / notificaciones)
+════════════════════════════════════════ */
+const THEME_KEY = 'terpelpos.theme.v1';
+const NOTIFICATIONS_KEY = 'terpelpos.notifications.v1';
+
+function getStoredTheme() {
+  try { return localStorage.getItem(THEME_KEY) || 'auto'; } catch { return 'auto'; }
+}
+function applyTheme(pref) {
+  const root = document.documentElement;
+  if (pref === 'light' || pref === 'dark') root.setAttribute('data-theme', pref);
+  else root.removeAttribute('data-theme');
+  document.querySelectorAll('.segmented-btn[data-theme-choice]').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.themeChoice === pref);
+  });
+}
+function setTheme(pref) {
+  try { localStorage.setItem(THEME_KEY, pref); } catch {}
+  applyTheme(pref);
+}
+applyTheme(getStoredTheme()); // aplicar antes del primer render para evitar parpadeo
+
+function notificationsEnabled() {
+  try { return localStorage.getItem(NOTIFICATIONS_KEY) !== 'off'; } catch { return true; }
+}
+function setNotificationsEnabled(enabled) {
+  try { localStorage.setItem(NOTIFICATIONS_KEY, enabled ? 'on' : 'off'); } catch {}
+}
+
+/* ════════════════════════════════════════
    HELPERS
 ════════════════════════════════════════ */
 function fmtDate(d) {
@@ -1962,6 +2168,7 @@ function clearReportTemplate() {
   renderAll();
 }
 function toast(msg, type = 'success') {
+  if (type !== 'error' && !notificationsEnabled()) return;
   const t = document.createElement('div');
   t.className = `toast ${type}`;
   t.textContent = msg;
@@ -1976,9 +2183,10 @@ function applyRoleUI() {
   document.body.classList.toggle('is-readonly', !isAdmin());
   document.getElementById('role-display').textContent = isAdmin() ? 'Admin' : 'Lectura';
   document.getElementById('sidebar-role').textContent = isAdmin() ? 'Admin' : 'Lectura';
-  if (!isAdmin()) {
-    const panel = document.getElementById('users-panel');
-    if (panel) panel.style.display = 'none';
+  const adminTab = document.getElementById('settings-tab-admin');
+  if (adminTab) adminTab.style.display = isAdmin() ? 'inline-flex' : 'none';
+  if (!isAdmin() && adminTab && adminTab.classList.contains('active')) {
+    switchSettingsTab('general');
   }
   renderCustomGrids();
   renderTable();
@@ -2261,16 +2469,38 @@ document.querySelector('[data-menu="settings"]').addEventListener('click', () =>
   showSection('settings-section');
   setActiveMenu('settings');
   renderSettingsPanel();
+  switchSettingsTab('general');
 });
 
-// Users menu item
+// Users menu item -> abre Configuración en la pestaña de Administración
 document.querySelector('[data-menu="users"]').addEventListener('click', () => {
-  if (isAdmin()) {
-    document.getElementById('btn-toggle-users').click();
-  } else {
-    toast('Solo admins pueden gestionar usuarios', 'error');
-  }
+  if (!isAdmin()) { toast('Solo admins pueden gestionar usuarios', 'error'); return; }
+  showSection('settings-section');
+  setActiveMenu('settings');
+  renderSettingsPanel();
+  switchSettingsTab('admin');
 });
+
+// Settings tabs
+document.querySelectorAll('.settings-tab').forEach(btn => {
+  btn.addEventListener('click', () => switchSettingsTab(btn.dataset.settingsTab));
+});
+
+// Apariencia (tema)
+document.querySelectorAll('.segmented-btn[data-theme-choice]').forEach(btn => {
+  btn.addEventListener('click', () => setTheme(btn.dataset.themeChoice));
+});
+
+// Notificaciones
+var settingsNotifToggle = document.getElementById('settings-notifications-toggle');
+if (settingsNotifToggle) {
+  settingsNotifToggle.checked = notificationsEnabled();
+  settingsNotifToggle.addEventListener('change', e => setNotificationsEnabled(e.target.checked));
+}
+
+// Exportar registros a Excel
+var settingsExportBtn = document.getElementById('settings-export-records');
+if (settingsExportBtn) settingsExportBtn.addEventListener('click', exportRecordsToExcel);
 
 /* ════════════════════════════════════════
    SIDEBAR SEARCH
@@ -2587,6 +2817,68 @@ function renderSettingsPanel() {
   if (completeEl) completeEl.textContent = metrics.complete;
   if (pendingEl) pendingEl.textContent = metrics.pending;
   if (partialEl) partialEl.textContent = metrics.partial;
+
+  renderSettingsProfile();
+}
+
+function renderSettingsProfile() {
+  if (!currentUser) return;
+  const rolePill = document.getElementById('settings-role-pill');
+  const nameEl = document.getElementById('settings-profile-name');
+  const emailEl = document.getElementById('settings-profile-email');
+  const avatarEl = document.getElementById('settings-profile-avatar');
+  const fullName = (currentUser.user_metadata && currentUser.user_metadata.full_name) || currentUser.email;
+  if (rolePill) rolePill.textContent = isAdmin() ? 'Admin' : 'Lectura';
+  if (nameEl) nameEl.textContent = fullName;
+  if (emailEl) emailEl.textContent = currentUser.email;
+  if (avatarEl) {
+    const avatarUrl = currentUser.user_metadata && currentUser.user_metadata.avatar_url;
+    if (avatarUrl) {
+      avatarEl.textContent = '';
+      let img = avatarEl.querySelector('img');
+      if (!img) { img = document.createElement('img'); img.alt = ''; avatarEl.appendChild(img); }
+      img.src = avatarUrl;
+    } else {
+      avatarEl.textContent = (currentUser.email || '?')[0].toUpperCase();
+    }
+  }
+}
+
+function switchSettingsTab(key) {
+  if (key === 'admin' && !isAdmin()) key = 'general';
+  document.querySelectorAll('.settings-tab').forEach(btn => {
+    const active = btn.dataset.settingsTab === key;
+    btn.classList.toggle('active', active);
+    btn.setAttribute('aria-selected', active ? 'true' : 'false');
+  });
+  document.querySelectorAll('.settings-tabpanel').forEach(panel => {
+    panel.style.display = panel.dataset.settingsPanel === key ? 'block' : 'none';
+  });
+  if (key === 'admin') loadUsersRoles();
+}
+
+function exportRecordsToExcel() {
+  if (!window.XLSX) { toast('No se pudo cargar el generador de Excel.', 'error'); return; }
+  if (!allRecords.length) { toast('No hay registros para exportar', 'error'); return; }
+  const rows = allRecords.map(r => ({
+    Tipo: fixLabel(r),
+    'Versión anterior': r.version_anterior || '',
+    'Versión nueva': r.version_nueva || '',
+    Fecha: r.fecha || '',
+    'Fecha programada': r.fecha_programada || '',
+    Responsable: r.responsable || '',
+    Estado: r.estado || '',
+    Core: safeArr(r.core_types).join(', '),
+    Servicios: safeArr(r.servicios).join(', '),
+    Validaciones: safeArr(r.validaciones).join(', '),
+    'Creado por': r.usuario_nombre || r.usuario_email || '',
+    'Creado el': fmtDate(r.created_at),
+  }));
+  const ws = XLSX.utils.json_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Actualizaciones');
+  XLSX.writeFile(wb, `terpelpos-actualizaciones-${new Date().toISOString().slice(0, 10)}.xlsx`);
+  toast('Registros exportados');
 }
 
 function renderUsersRoles() {
@@ -2720,12 +3012,6 @@ document.getElementById('search-input').addEventListener('input', e => {
   renderTable();
 });
 
-document.getElementById('btn-toggle-users').addEventListener('click', async () => {
-  if (!isAdmin()) return;
-  const panel = document.getElementById('users-panel');
-  panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
-  if (panel.style.display !== 'none') await loadUsersRoles();
-});
 
 document.getElementById('btn-save-user-role').addEventListener('click', saveUserRole);
 
