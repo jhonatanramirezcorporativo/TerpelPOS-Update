@@ -3699,11 +3699,10 @@ async function downloadCompiled(id, fileName) {
       .getPublicUrl(compiled.ruta_almacenamiento);
     
     if (data && data.publicUrl) {
-      // Increment download counter
-      await sb.from('compilados')
-        .update({ descargas: (compiled.descargas || 0) + 1 })
-        .eq('id', id);
-      
+      // Increment download counter (vía función: cualquier usuario puede sumar descargas
+      // sin necesitar permiso de UPDATE general sobre la tabla)
+      await sb.rpc('increment_compilado_descargas', { compilado_id: id });
+
       // Trigger download
       const a = document.createElement('a');
       a.href = data.publicUrl;
