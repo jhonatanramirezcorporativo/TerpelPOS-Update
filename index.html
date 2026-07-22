@@ -1481,6 +1481,13 @@
               <div class="profile-email" id="settings-profile-email">—</div>
             </div>
           </div>
+          <div class="field" style="margin-top:.9rem">
+            <label for="settings-profile-phone">Teléfono</label>
+            <input type="tel" id="settings-profile-phone" placeholder="Ej: 300 123 4567" autocomplete="tel" />
+          </div>
+          <div class="settings-actions" style="margin-top:.75rem">
+            <button class="btn-secondary-soft" id="settings-profile-save" type="button">Guardar</button>
+          </div>
           <div class="settings-note">Tu rol determina qué puedes editar. Solo un admin puede cambiar roles, desde la pestaña Administración.</div>
         </section>
 
@@ -1937,6 +1944,7 @@ let reportTemplateRows = [];
 let reportTemplateName = '';
 const REPORT_CRONOGRAMA_TABLE = 'reporte_cronograma';
 const REPORT_CRONOGRAMA_META_TABLE = 'reporte_cronograma_meta';
+const USER_PROFILE_TABLE = 'perfiles_usuario';
 
 /* ════════════════════════════════════════
    PREFERENCIAS (tema / notificaciones)
@@ -2309,6 +2317,7 @@ async function setUser(user) {
   applyRoleUI();
   await loadCustomItems();
   await loadReportTemplateFromServer();
+  await loadUserProfile();
   await loadRecords();
   if (isAdmin()) await loadUsersRoles();
 }
@@ -2365,6 +2374,15 @@ document.getElementById('sidebar-logout').addEventListener('click', async () => 
   allRecords = [];
   showLogin();
 });
+
+document.getElementById('sidebar-view-profile').addEventListener('click', () => {
+  showSection('settings-section');
+  setActiveMenu('settings');
+  renderSettingsPanel();
+  switchSettingsTab('general');
+});
+
+document.getElementById('settings-profile-save').addEventListener('click', saveUserProfile);
 
 // Submenu toggles
 function closeSidebarSubmenus(exceptId) {
@@ -2890,6 +2908,31 @@ function renderSettingsProfile() {
       avatarEl.textContent = (currentUser.email || '?')[0].toUpperCase();
     }
   }
+}
+
+async function loadUserProfile() {
+  if (!currentUser) return;
+  const { data, error } = await sb
+    .from(USER_PROFILE_TABLE)
+    .select('telefono')
+    .eq('email', currentUser.email)
+    .maybeSingle();
+  if (error) { console.error('No se pudo cargar el perfil', error); return; }
+  const phoneInput = document.getElementById('settings-profile-phone');
+  if (phoneInput) phoneInput.value = (data && data.telefono) || '';
+}
+
+async function saveUserProfile() {
+  if (!currentUser) return;
+  const phoneInput = document.getElementById('settings-profile-phone');
+  const telefono = phoneInput ? phoneInput.value.trim() : '';
+  const { error } = await sb.from(USER_PROFILE_TABLE).upsert({
+    email: currentUser.email,
+    telefono,
+    updated_at: new Date().toISOString(),
+  });
+  if (error) { toast('No se pudo guardar el perfil: ' + error.message, 'error'); return; }
+  toast('Perfil guardado');
 }
 
 function switchSettingsTab(key) {
@@ -3587,7 +3630,7 @@ document.getElementById('upload-modal-save').addEventListener('click', async () 
   
   if (uploadError) {
     if (isMissingCompiledTableError(uploadError)) {
-      toast('Falta la tabla compilados en Supabase', 'error');
+      toast('Falta crear el bucket "compilados" en Supabase Storage', 'error');
       return;
     }
     toast('Error al subir archivo: ' + uploadError.message, 'error');
