@@ -367,6 +367,22 @@
       white-space: nowrap;
     }
     .btn-logout:hover { background: var(--c-danger); color: white; border-color: var(--c-danger); }
+    .btn-theme-toggle {
+      display: flex; align-items: center; justify-content: center;
+      width: 32px; height: 32px; flex-shrink: 0;
+      border-radius: 8px;
+      border: 1px solid var(--c-border);
+      color: var(--c-muted);
+      transition: background var(--transition), color var(--transition), border-color var(--transition);
+    }
+    .btn-theme-toggle:hover { color: var(--c-accent); border-color: var(--c-accent); }
+    .btn-theme-toggle .icon-moon { display: none; }
+    :root[data-theme="dark"] .btn-theme-toggle .icon-sun { display: none; }
+    :root[data-theme="dark"] .btn-theme-toggle .icon-moon { display: block; }
+    @media (prefers-color-scheme: dark) {
+      html:not([data-theme="light"]) .btn-theme-toggle .icon-sun { display: none; }
+      html:not([data-theme="light"]) .btn-theme-toggle .icon-moon { display: block; }
+    }
     .role-pill {
       padding: .18rem .55rem;
       border-radius: 999px;
@@ -1197,6 +1213,10 @@
       </div>
       <div class="topbar-user">
         <span class="role-pill" id="role-display">Lectura</span>
+        <button class="btn-theme-toggle" id="btn-theme-toggle" type="button" title="Cambiar tema">
+          <svg class="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+          <svg class="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        </button>
         <button class="btn-logout" id="btn-logout">Cerrar sesión</button>
       </div>
     </header>
@@ -2324,6 +2344,12 @@ document.getElementById('btn-logout').addEventListener('click', async () => {
   customItems = [];
   allRecords = [];
   showLogin();
+});
+
+document.getElementById('btn-theme-toggle').addEventListener('click', () => {
+  const current = document.documentElement.getAttribute('data-theme')
+    || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  setTheme(current === 'dark' ? 'light' : 'dark');
 });
 
 /* ════════════════════════════════════════
