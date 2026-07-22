@@ -13,16 +13,16 @@
        DESIGN TOKENS
     ───────────────────────────────────────── */
     :root {
-      --c-bg:       #fafafa;
+      --c-bg:       #eef0f2;
       --c-surface:  #ffffff;
-      --c-border:   #ececec;
-      --c-text:     #1c1a19;
-      --c-muted:    #6b6560;
+      --c-border:   #dde1e6;
+      --c-text:     #1a1d21;
+      --c-muted:    #667085;
       --c-accent:   #e4032b;       /* Terpel rojo */
       --c-accent2:  #ffc629;       /* Terpel amarillo */
-      --c-green:    #4c9a6a;
+      --c-green:    #2f9e5b;
       --c-yellow:   #d69e2e;
-      --c-blue:     #4d7890;
+      --c-blue:     #3b6f8f;
       --c-purple:   #7b6a97;
       --c-danger:   #d7263d;
       --c-orange:   #c66b28;
@@ -37,22 +37,22 @@
 
     @media (prefers-color-scheme: dark) {
       :root:not([data-theme="light"]) {
-        --c-bg:      #1c1211;
-        --c-surface: #271b19;
-        --c-border:  #3d2b28;
-        --c-text:    #f7f0ec;
-        --c-muted:   #c9beb8;
+        --c-bg:      #16181c;
+        --c-surface: #1f2226;
+        --c-border:  #2c3036;
+        --c-text:    #eceef0;
+        --c-muted:   #9aa2ac;
         --c-shadow:  0 1px 3px rgba(0,0,0,.4), 0 4px 16px rgba(0,0,0,.3);
         --c-shadow-lg:0 8px 32px rgba(0,0,0,.5);
       }
     }
     /* Manual override (set via Configuración > Apariencia), wins over OS preference */
     :root[data-theme="dark"] {
-      --c-bg:      #1c1211;
-      --c-surface: #271b19;
-      --c-border:  #3d2b28;
-      --c-text:    #f7f0ec;
-      --c-muted:   #c9beb8;
+      --c-bg:      #16181c;
+      --c-surface: #1f2226;
+      --c-border:  #2c3036;
+      --c-text:    #eceef0;
+      --c-muted:   #9aa2ac;
       --c-shadow:  0 1px 3px rgba(0,0,0,.4), 0 4px 16px rgba(0,0,0,.3);
       --c-shadow-lg:0 8px 32px rgba(0,0,0,.5);
     }
@@ -324,9 +324,9 @@
       display: flex; align-items: center; gap: 1rem;
     }
     @media (prefers-color-scheme: dark) {
-      html:not([data-theme="light"]) .topbar { background: rgba(28,18,17,.9); }
+      html:not([data-theme="light"]) .topbar { background: rgba(22,24,28,.9); }
     }
-    html[data-theme="dark"] .topbar { background: rgba(28,18,17,.9); }
+    html[data-theme="dark"] .topbar { background: rgba(22,24,28,.9); }
     @media (max-width: 1024px) {
       .sidebar { display: none; }
       .app-wrapper { margin-left: 0; }
@@ -1343,15 +1343,16 @@
     <div class="page-header">
       <div>
         <h2 class="page-title">Reporte de cronograma</h2>
-        <p class="page-sub">Avance de actualizacion segun EDS programadas y estado alimentado desde el registro.</p>
+        <p class="page-sub">Avance de actualización según EDS programadas. Plantilla compartida: la ve y exporta todo el equipo.</p>
       </div>
     </div>
 
     <div class="toolbar" style="margin-bottom:1rem;">
-      <div class="search-wrap" style="max-width:420px;">
+      <div class="search-wrap write-action" style="max-width:420px;">
         <input type="file" id="report-template-input" accept=".xlsx,.xls,.csv" style="width:100%; padding:.55rem .75rem; border:1px solid var(--c-border); border-radius:8px; background:var(--c-surface);" />
       </div>
-      <button class="btn btn-secondary" id="report-template-clear" type="button">Limpiar plantilla</button>
+      <button class="btn btn-secondary write-action" id="report-template-clear" type="button">Limpiar plantilla</button>
+      <button class="btn-secondary-soft" id="report-export-btn" type="button">Exportar (.xlsx)</button>
       <span class="page-sub" id="report-template-name">Sin plantilla cargada</span>
     </div>
 
@@ -1499,7 +1500,7 @@
         <section class="settings-panel">
           <div class="settings-panel-head">
             <div class="settings-panel-title">Plantilla del reporte</div>
-            <span class="data-pill complete"><span class="dot"></span><span id="settings-template-state">Persistente</span></span>
+            <span class="data-pill complete"><span class="dot"></span><span id="settings-template-state">Compartida</span></span>
           </div>
           <div class="settings-meta">
             <div class="settings-meta-row">
@@ -1516,7 +1517,7 @@
             </div>
           </div>
           <div class="settings-actions">
-            <button class="btn-secondary-soft" id="settings-clear-template" type="button">Limpiar local</button>
+            <button class="btn-secondary-soft write-action" id="settings-clear-template" type="button">Eliminar plantilla compartida</button>
           </div>
         </section>
 
@@ -1914,8 +1915,8 @@ let currentCompiledFilter = 'all';
 let currentCompiledFile = null;
 let reportTemplateRows = [];
 let reportTemplateName = '';
-const REPORT_TEMPLATE_STORAGE_KEY = 'terpelpos.reportTemplateRows.v1';
-const REPORT_TEMPLATE_NAME_KEY = 'terpelpos.reportTemplateName.v1';
+const REPORT_CRONOGRAMA_TABLE = 'reporte_cronograma';
+const REPORT_CRONOGRAMA_META_TABLE = 'reporte_cronograma_meta';
 
 /* ════════════════════════════════════════
    PREFERENCIAS (tema / notificaciones)
@@ -2072,22 +2073,28 @@ function computeReportMetrics(rows) {
   const avance = total ? Math.round(((complete + (partial * 0.5)) / total) * 100) : 0;
   return { total, complete, partial, pending, franquiciadas, afiliadas, masser, industrias, avance };
 }
-function saveReportTemplateState() {
-  try {
-    localStorage.setItem(REPORT_TEMPLATE_STORAGE_KEY, JSON.stringify(reportTemplateRows));
-    localStorage.setItem(REPORT_TEMPLATE_NAME_KEY, reportTemplateName || '');
-  } catch {}
+async function loadReportTemplateFromServer() {
+  const [{ data: metaData, error: metaError }, { data: rows, error: rowsError }] = await Promise.all([
+    sb.from(REPORT_CRONOGRAMA_META_TABLE).select('*').eq('id', 1).maybeSingle(),
+    sb.from(REPORT_CRONOGRAMA_TABLE).select('*').order('nombre_eds', { ascending: true }),
+  ]);
+  if (metaError) toast('No se pudo cargar el estado del cronograma: ' + metaError.message, 'error');
+  if (rowsError) { toast('No se pudo cargar el cronograma: ' + rowsError.message, 'error'); return; }
+  reportTemplateRows = rows || [];
+  reportTemplateName = (metaData && metaData.nombre_archivo) || '';
 }
-function restoreReportTemplateState() {
-  try {
-    const rawRows = localStorage.getItem(REPORT_TEMPLATE_STORAGE_KEY);
-    const rawName = localStorage.getItem(REPORT_TEMPLATE_NAME_KEY);
-    reportTemplateRows = rawRows ? JSON.parse(rawRows) : [];
-    reportTemplateName = rawName || '';
-  } catch {
-    reportTemplateRows = [];
-    reportTemplateName = '';
+async function replaceReportTemplateOnServer(rows, fileName) {
+  const { error: delError } = await sb.from(REPORT_CRONOGRAMA_TABLE).delete().gte('id', 0);
+  if (delError) { toast('Error al reemplazar el cronograma: ' + delError.message, 'error'); return false; }
+  if (rows.length) {
+    const { error: insError } = await sb.from(REPORT_CRONOGRAMA_TABLE).insert(rows);
+    if (insError) { toast('Error al guardar el cronograma: ' + insError.message, 'error'); return false; }
   }
+  const { error: metaError } = await sb.from(REPORT_CRONOGRAMA_META_TABLE).upsert({
+    id: 1, nombre_archivo: fileName || null, actualizado_por: currentUser.email, actualizado_en: new Date().toISOString(),
+  });
+  if (metaError) toast('Cronograma guardado, pero no se pudo registrar el nombre del archivo: ' + metaError.message, 'info');
+  return true;
 }
 function renderReportTable(rows) {
   const tbody = document.getElementById('report-body');
@@ -2099,17 +2106,17 @@ function renderReportTable(rows) {
     const negocio = normalizeBusiness(r.negocio);
     const estado = String(r.estado || '—');
     const stateSlug = estado === '—' ? 'pendiente' : (estado.toLowerCase().includes('complet') ? 'completada' : estado.toLowerCase().includes('parc') ? 'en-progreso' : 'pendiente');
+    const estadoCell = isAdmin() ? `
+        <select class="report-state-select" data-report-id="${esc(r.id)}">
+          ${['Pendiente','Parcial','Completa'].map(opt => `<option value="${opt}" ${reportStateLabel(estado) === opt ? 'selected' : ''}>${opt}</option>`).join('')}
+        </select>` : `<span class="badge ${stateSlug}"><span class="badge-dot ${stateSlug}"></span>${esc(reportStateLabel(estado))}</span>`;
     return `<tr>
       <td>${esc(r.codigo_unico || '—')}</td>
       <td>${esc(r.regional || '—')}</td>
       <td>${esc(r.nombre_eds || '—')}</td>
       <td><span class="badge ${negocio === 'MASSER' ? 'fix' : negocio === 'FRANQUICIAS' ? 'completada' : 'en-progreso'}"><span class="badge-dot ${negocio === 'MASSER' ? 'fix' : negocio === 'FRANQUICIAS' ? 'completada' : 'en-progreso'}"></span>${esc(negocio)}</span></td>
       <td>${esc(r.avance_texto || '—')}</td>
-      <td>
-        <select class="report-state-select" data-report-code="${esc(r.codigo_unico || '')}">
-          ${['Pendiente','Parcial','Completa'].map(opt => `<option value="${opt}" ${reportStateLabel(estado) === opt ? 'selected' : ''}>${opt}</option>`).join('')}
-        </select>
-      </td>
+      <td>${estadoCell}</td>
       <td class="date-cell">${formatReportDate(r.fecha_programada)}</td>
       <td>${esc(r.dia || '—')}</td>
       <td>${esc(r.agente || '—')}</td>
@@ -2117,13 +2124,21 @@ function renderReportTable(rows) {
     </tr>`;
   }).join('');
   tbody.querySelectorAll('.report-state-select').forEach(sel => {
-    sel.addEventListener('change', (e) => {
-      const code = e.currentTarget.getAttribute('data-report-code');
-      const row = reportTemplateRows.find(r => String(r.codigo_unico || '') === String(code || ''));
+    sel.addEventListener('change', async (e) => {
+      if (!isAdmin()) return;
+      const id = e.currentTarget.getAttribute('data-report-id');
+      const row = reportTemplateRows.find(r => String(r.id) === String(id || ''));
       if (!row) return;
-      row.estado = e.currentTarget.value;
-      saveReportTemplateState();
+      const previous = row.estado;
+      const next = e.currentTarget.value;
+      row.estado = next;
       renderReports();
+      const { error } = await sb.from(REPORT_CRONOGRAMA_TABLE).update({ estado: next }).eq('id', id);
+      if (error) {
+        row.estado = previous;
+        renderReports();
+        toast('No se pudo actualizar el estado: ' + error.message, 'error');
+      }
     });
   });
 }
@@ -2135,37 +2150,43 @@ async function readExcelFile(file) {
   if (!sheet) throw new Error('La plantilla no tiene hojas.');
   return XLSX.utils.sheet_to_json(wb.Sheets[sheet], { defval: '' });
 }
-async function loadReportTemplate(file) {
-  const rows = await readExcelFile(file);
-  reportTemplateRows = rows.map(row => ({
-    codigo_unico: pickRowValue(row, ['COD_UNIC', 'COD_UNICO', 'Codigo', 'Código']),
-    regional: pickRowValue(row, ['Regional']),
-    nombre_eds: pickRowValue(row, ['Nombre EDS', 'NOMBRE EDS']),
-    negocio: pickRowValue(row, ['Negocio']),
-    cantidad_islas: pickRowValue(row, ['Cantidad islas', 'Cantidad Islas', 'ISLAS']),
-    total_pq: pickRowValue(row, ['Total PQ', 'TOTAL PQ', 'Total']),
-    estado: pickRowValue(row, ['Estado', 'ESTADO', 'Estado cronograma']),
-    fecha_programada: pickRowValue(row, ['Fecha programada', 'Fecha Programada']),
-    dia: pickRowValue(row, ['DIA', 'Dia']),
-    agente: pickRowValue(row, ['Agente']),
-    observaciones: pickRowValue(row, ['Observaciones']),
-  })).filter(r => Object.values(r).some(v => String(v).trim() !== ''));
-  reportTemplateName = file.name;
-  document.getElementById('report-template-name').textContent = file.name;
-  saveReportTemplateState();
-  renderAll();
+function toStorableCell(value) {
+  if (value instanceof Date) return value.toISOString();
+  return value == null ? '' : String(value);
 }
-function clearReportTemplate() {
+async function loadReportTemplate(file) {
+  if (!isAdmin()) { toast('Solo admins pueden reemplazar la plantilla compartida', 'error'); return; }
+  const rows = await readExcelFile(file);
+  const parsed = rows.map(row => ({
+    codigo_unico: toStorableCell(pickRowValue(row, ['COD_UNIC', 'COD_UNICO', 'Codigo', 'Código'])),
+    regional: toStorableCell(pickRowValue(row, ['Regional'])),
+    nombre_eds: toStorableCell(pickRowValue(row, ['Nombre EDS', 'NOMBRE EDS'])),
+    negocio: toStorableCell(pickRowValue(row, ['Negocio'])),
+    cantidad_islas: toStorableCell(pickRowValue(row, ['Cantidad islas', 'Cantidad Islas', 'ISLAS'])),
+    total_pq: toStorableCell(pickRowValue(row, ['Total PQ', 'TOTAL PQ', 'Total'])),
+    estado: toStorableCell(pickRowValue(row, ['Estado', 'ESTADO', 'Estado cronograma'])),
+    fecha_programada: toStorableCell(pickRowValue(row, ['Fecha programada', 'Fecha Programada'])),
+    dia: toStorableCell(pickRowValue(row, ['DIA', 'Dia'])),
+    agente: toStorableCell(pickRowValue(row, ['Agente'])),
+    observaciones: toStorableCell(pickRowValue(row, ['Observaciones'])),
+  })).filter(r => Object.values(r).some(v => String(v).trim() !== ''));
+
+  const ok = await replaceReportTemplateOnServer(parsed, file.name);
+  if (!ok) return;
+  await loadReportTemplateFromServer();
+  renderAll();
+  toast('Plantilla compartida actualizada para todo el equipo');
+}
+async function clearReportTemplate() {
+  if (!isAdmin()) { toast('Solo admins pueden eliminar la plantilla compartida', 'error'); return; }
+  const ok = await replaceReportTemplateOnServer([], null);
+  if (!ok) return;
   reportTemplateRows = [];
   reportTemplateName = '';
   const input = document.getElementById('report-template-input');
   if (input) input.value = '';
-  document.getElementById('report-template-name').textContent = 'Sin plantilla cargada';
-  try {
-    localStorage.removeItem(REPORT_TEMPLATE_STORAGE_KEY);
-    localStorage.removeItem(REPORT_TEMPLATE_NAME_KEY);
-  } catch {}
   renderAll();
+  toast('Plantilla compartida eliminada', 'info');
 }
 function toast(msg, type = 'success') {
   if (type !== 'error' && !notificationsEnabled()) return;
@@ -2267,6 +2288,7 @@ async function setUser(user) {
   await loadCurrentRole();
   applyRoleUI();
   await loadCustomItems();
+  await loadReportTemplateFromServer();
   await loadRecords();
   if (isAdmin()) await loadUsersRoles();
 }
@@ -2432,17 +2454,17 @@ document.querySelector('[data-menu="reports"]').addEventListener('click', () => 
 
 document.getElementById('report-template-input').addEventListener('change', async (e) => {
   const file = e.target.files && e.target.files[0];
+  e.target.value = '';
   if (!file) return;
   try {
     await loadReportTemplate(file);
-    toast('Plantilla cargada', 'success');
   } catch (err) {
-    clearReportTemplate();
     toast('No se pudo leer la plantilla: ' + err.message, 'error');
   }
 });
 
 document.getElementById('report-template-clear').addEventListener('click', clearReportTemplate);
+document.getElementById('report-export-btn').addEventListener('click', exportReportTemplateToExcel);
 
 var settingsClearBtn = document.getElementById('settings-clear-template');
 if (settingsClearBtn) settingsClearBtn.addEventListener('click', clearReportTemplate);
@@ -2810,7 +2832,7 @@ function renderSettingsPanel() {
   const pendingEl = document.getElementById('settings-pending-count');
   const partialEl = document.getElementById('settings-partial-count');
 
-  if (stateEl) stateEl.textContent = rows.length ? 'Persistente' : 'Sin plantilla';
+  if (stateEl) stateEl.textContent = rows.length ? 'Compartida' : 'Sin plantilla';
   if (templateNameEl) templateNameEl.textContent = reportTemplateName || 'Sin plantilla cargada';
   if (templateCountEl) templateCountEl.textContent = metrics.total;
   if (templateProgressEl) templateProgressEl.textContent = `${metrics.avance}%`;
@@ -2879,6 +2901,29 @@ function exportRecordsToExcel() {
   XLSX.utils.book_append_sheet(wb, ws, 'Actualizaciones');
   XLSX.writeFile(wb, `terpelpos-actualizaciones-${new Date().toISOString().slice(0, 10)}.xlsx`);
   toast('Registros exportados');
+}
+
+function exportReportTemplateToExcel() {
+  if (!window.XLSX) { toast('No se pudo cargar el generador de Excel.', 'error'); return; }
+  if (!reportTemplateRows.length) { toast('No hay cronograma cargado para exportar', 'error'); return; }
+  const rows = reportTemplateRows.map(r => ({
+    'Código': r.codigo_unico || '',
+    Regional: r.regional || '',
+    'Nombre EDS': r.nombre_eds || '',
+    Negocio: normalizeBusiness(r.negocio),
+    'Cantidad islas': r.cantidad_islas || '',
+    'Total PQ': r.total_pq || '',
+    Estado: reportStateLabel(r.estado),
+    'Fecha programada': formatReportDate(r.fecha_programada),
+    Día: r.dia || '',
+    Agente: r.agente || '',
+    Observaciones: r.observaciones || '',
+  }));
+  const ws = XLSX.utils.json_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Cronograma');
+  XLSX.writeFile(wb, `terpelpos-cronograma-${new Date().toISOString().slice(0, 10)}.xlsx`);
+  toast('Cronograma exportado');
 }
 
 function renderUsersRoles() {
@@ -3321,7 +3366,6 @@ function init() {
   // Build checkbox grids
   renderCustomGrids();
   buildValGrid();
-  restoreReportTemplateState();
   setActiveMenu('dashboard');
   // Start auth
   initAuth();
